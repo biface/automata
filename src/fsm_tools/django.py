@@ -1,4 +1,4 @@
-from .core import ExtFSM
+from .lightweight import ExtFSM
 
 class ContextFSM(ExtFSM):
     """

@@ -1,6 +1,11 @@
-class FSM:
+class FSMlight:
     """
-    This class implements a simple Finite State Machine.
+    The FSMlight class implements a lightweight Finite State Machine.
+
+    Description
+    ===========
+
+
     """
 
     def __init__(self, initial_states):
@@ -24,7 +29,7 @@ class FSM:
             self.current = self.transitions[self.current][event]
 
 
-class ExtFSM(FSM):
+class ExtFSM(FSMlight):
     """
     This class extends simple FSM with memory of previous state
     """
