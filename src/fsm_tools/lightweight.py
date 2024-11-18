@@ -2,11 +2,6 @@ from .exception import FSMTransitionError, FSMTriggerError
 
 class FSM:
     """
-    Finite State Machine light (FSM) class
-
-    Description
-    ===========
-
     This class is a lightweight implementation of the finite state machine. It simply uses a dictionary to store state
     transitions, and the current state is stored in a variable.
 
@@ -15,10 +10,16 @@ class FSM:
     dictionary key, and the value is the state after the transition.
 
     Example
-    =======
-
+    -------
 
     """
+
+    initial = None
+    "initial is used to store the initial state. it will not change and will be used to reset the **initial** state."
+    current = None
+    "current is used to store the current state of the machine."
+    transitions = None
+    "transitions is used to store the transition dictionary."
 
     def __init__(self, initial_states):
         """
@@ -26,6 +27,7 @@ class FSM:
         initializes the ``transitions`` dictionary.
 
         :param initial_states: initial states
+        :type initial_states: any
         :return: None
         """
 
@@ -40,9 +42,13 @@ class FSM:
         created in the transition dictionary.
 
         :param from_state: initial state
+        :type from_state: any
         :param to_state: final state
+        :type to_state: any
         :param event: transition event
+        :type event: any
         :raises FSMTransitionError: if the transition does not exist
+        :return: None
         """
         if from_state not in self.transitions:
             self.transitions[from_state] = {}
