@@ -1,8 +1,13 @@
 import pytest
 
 from fsm_tools.lightweight import FSM
+from fsm_tools.exception import FSMTransitionError, FSMTriggerError
 
 turnstile = FSM('locked')
+
+def test_fsm_init_failure():
+    with pytest.raises(TypeError):
+        FSM()
 
 def test_fsm_init_success():
     assert isinstance(turnstile.transitions, dict)
@@ -74,3 +79,11 @@ def test_turnstile_cycle_5_success():
 def test_turnstile_cycle_6_success():
     turnstile.trigger('push')
     assert turnstile.current == "locked"
+
+def test_turnstile_transition_error():
+    with pytest.raises(FSMTransitionError):
+        turnstile.add_transition('locked', 'unlocked', 'coin')
+
+def test_turnstile_trigger_error():
+    with pytest.raises(FSMTriggerError):
+        turnstile.trigger('pull')

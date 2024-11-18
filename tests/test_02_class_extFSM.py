@@ -1,6 +1,7 @@
 import pytest
 
 from fsm_tools.lightweight import ExtFSM
+from fsm_tools.exception import FSMTriggerError
 
 turnstile = ExtFSM('locked')
 
@@ -93,3 +94,9 @@ def test_turnstile_cycle_5_success():
 def test_turnstile_cycle_6_success():
     turnstile.trigger('push')
     assert turnstile.current == "locked"
+
+def test_turnstile_trigger_error():
+    previous = turnstile.get_previous()
+    with pytest.raises(FSMTriggerError):
+        turnstile.trigger('pull')
+    assert turnstile.previous == previous
