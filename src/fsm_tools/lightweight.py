@@ -1,3 +1,5 @@
+from .exception import FSMTransitionError, FSMTriggerError
+
 class FSM:
     """
     Finite State Machine light (FSM) class
@@ -40,10 +42,15 @@ class FSM:
         :param from_state: initial state
         :param to_state: final state
         :param event: transition event
+        :raises FSMTransitionError: if the transition does not exist
         """
         if from_state not in self.transitions:
             self.transitions[from_state] = {}
-        self.transitions[from_state][event] = to_state
+
+        if event in self.transitions[from_state].keys():
+            raise FSMTransitionError(str(event), 20)
+        else:
+            self.transitions[from_state][event] = to_state
 
     def get_state(self):
         """
@@ -65,9 +72,12 @@ class FSM:
         defined by the event.
 
         :param event: the event to trigger
+        :raises FSMTriggerError: if the event does not exist
         """
         if event in self.transitions.get(self.current, {}):
             self.current = self.transitions[self.current][event]
+        else:
+            raise FSMTriggerError(str(event), 20)
 
 
 class ExtFSM(FSM):
@@ -105,5 +115,6 @@ class ExtFSM(FSM):
         This function triggers the event on the ExtFSM.
         :param event: the event to trigger
         """
-        self.previous = self.get_state()
+        previous = self.get_state()
         super().trigger(event)
+        self.previous = previous
