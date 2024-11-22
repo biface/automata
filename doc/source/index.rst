@@ -14,6 +14,7 @@ without being properly formalized and managed.
 
 .. toctree::
     install
+    theory
     api
     :numbered:
     :maxdepth: 2
