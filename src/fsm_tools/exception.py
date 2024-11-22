@@ -31,7 +31,6 @@ class StateMachineException(Exception):
         super().__init__(message)
         self.code = code
 
-
 class StateMachineTypeError(TypeError):
     """
     This basic class implements specific type error types for finite-state machines and automata.
@@ -60,7 +59,6 @@ class StateMachineTypeError(TypeError):
             raise ValueError("State machine type error: Code must be between 1 and 999.")
         else:
             self.code = 1000 + code
-
 
 class StateMachineValueError(ValueError):
     """
@@ -91,8 +89,7 @@ class StateMachineValueError(ValueError):
         else:
             self.code = 2000 + code
 
-
-class FSMTransitionError(StateMachineValueError):
+class InvalidStateTransitionError(StateMachineValueError):
     """
     This exception is raised if the requested transition event already exists.
     """
@@ -101,8 +98,7 @@ class FSMTransitionError(StateMachineValueError):
         msg = "The requested transition event already exists. The event " + message + " is already registered."
         super().__init__(msg, code)
 
-
-class FSMTriggerError(StateMachineValueError):
+class InvalidStateTriggerError(StateMachineValueError):
     """
     This exception is raised if the requested trigger event is not registered.
     """

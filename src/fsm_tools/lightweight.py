@@ -1,4 +1,4 @@
-from .exception import FSMTransitionError, FSMTriggerError
+from .exception import InvalidStateTransitionError, InvalidStateTriggerError
 from typing import Any
 
 class FSM:
@@ -55,7 +55,7 @@ class FSM:
             self.transitions[from_state] = {}
 
         if event in self.transitions[from_state].keys():
-            raise FSMTransitionError(str(event), 20)
+            raise InvalidStateTransitionError(str(event), 20)
         else:
             self.transitions[from_state][event] = to_state
 
@@ -84,7 +84,7 @@ class FSM:
         if event in self.transitions.get(self.current, {}):
             self.current = self.transitions[self.current][event]
         else:
-            raise FSMTriggerError(str(event), 20)
+            raise InvalidStateTriggerError(str(event), 20)
 
 
 class ExtFSM(FSM):

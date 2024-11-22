@@ -1,4 +1,4 @@
-from .exception import FSMTransitionError, FSMTriggerError
+from .exception import InvalidStateTransitionError, InvalidStateTriggerError
 from .lightweight import FSM, ExtFSM
 from .django import ContextFSM
 
