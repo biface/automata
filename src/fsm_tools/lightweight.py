@@ -1,4 +1,5 @@
 from .exception import FSMTransitionError, FSMTriggerError
+from typing import Any
 
 class FSM:
     """
@@ -21,7 +22,7 @@ class FSM:
     transitions = None
     "transitions is used to store the transition dictionary."
 
-    def __init__(self, initial_states):
+    def __init__(self, initial_states: Any):
         """
         This function initializes the FSM class. It requires to define the initial states as a string. it also
         initializes the ``transitions`` dictionary.
@@ -35,7 +36,7 @@ class FSM:
         self.current = initial_states
         self.transitions = {}
 
-    def add_transition(self, from_state, to_state, event):
+    def add_transition(self, from_state: Any, to_state: Any, event: Any) -> None:
         """
         This function adds a state transition to the finite-state automaton. The transition consists in adding the
         transition event to the transition dictionary for a given state. If the original state does not exist, it is
@@ -58,7 +59,7 @@ class FSM:
         else:
             self.transitions[from_state][event] = to_state
 
-    def get_state(self):
+    def get_state(self) -> Any:
         """
         This function returns the current state of the FSM.
 
@@ -66,13 +67,13 @@ class FSM:
         """
         return self.current
 
-    def reset(self):
+    def reset(self) -> None:
         """
         This function resets the FSM to its initial state.
         """
         self.current = self.initial
 
-    def trigger(self, event):
+    def trigger(self, event: Any) -> None:
         """
         This function triggers the event on the FSM. It sets the current state of the FSM to the state
         defined by the event.
@@ -91,7 +92,7 @@ class ExtFSM(FSM):
     This class extends simple FSM with memory of previous state
     """
 
-    def __init__(self, initial_states):
+    def __init__(self, initial_states: Any):
         """
         This function initializes the ExtFSM class.
 
@@ -108,7 +109,7 @@ class ExtFSM(FSM):
         super().reset()
         self.previous = None
 
-    def get_previous(self):
+    def get_previous(self) -> Any:
         """
         This function returns the previous state of the ExtFSM.
 
@@ -116,7 +117,7 @@ class ExtFSM(FSM):
         """
         return self.previous
 
-    def trigger(self, event):
+    def trigger(self, event: Any) -> None:
         """
         This function triggers the event on the ExtFSM.
         :param event: the event to trigger
