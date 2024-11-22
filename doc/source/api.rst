@@ -12,8 +12,8 @@ Exceptions
 
 .. automodule:: fsm_tools.exception
     :private-members: StateMachineException, StateMachineTypeError, StateMachineValueError
-.. autoexception:: FSMTransitionError
-.. autoexception:: FSMTriggerError
+.. autoexception:: InvalidStateTransitionError
+.. autoexception:: InvalidStateTriggerError
 
 Lightweight finite state machine
 --------------------------------

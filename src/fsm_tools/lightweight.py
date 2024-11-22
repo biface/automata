@@ -48,7 +48,7 @@ class FSM:
         :type to_state: any
         :param event: transition event
         :type event: any
-        :raises FSMTransitionError: if the transition does not exist
+        :raises InvalidStateTransitionError: if the transition does not exist
         :return: None
         """
         if from_state not in self.transitions:
@@ -79,7 +79,7 @@ class FSM:
         defined by the event.
 
         :param event: the event to trigger
-        :raises FSMTriggerError: if the event does not exist
+        :raises InvalidStateTriggerError: if the event does not exist
         """
         if event in self.transitions.get(self.current, {}):
             self.current = self.transitions[self.current][event]

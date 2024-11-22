@@ -9,3 +9,7 @@ An FSM can be a :
 
     * Deterministic Finite Automaton (DFA) when each state and input symbol lead to exactly on state
     * Non-deterministic Finite Automaton (NFA) when a state and input symbol may lead to multiple states or none
+
+
+Building an FSM from a Regular Grammar
+---------------------------------------

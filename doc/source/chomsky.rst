@@ -76,21 +76,45 @@ Example
 Type 2 - Context-Free Grammars
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Context-free grammar produced languages where non-terminals generate a string independent of its context. These
+languages are recognized by pushdown automata and are used in programming languages especially with arithmetic
+expressions.
+
 **Formalization**
+
+    * :math:`A \to\ \gamma`
+
+where
+
+    * :math:`A \in N`
+    * :math:`\gamma \in (N \cup \Sigma)^*`
+
+.. Note::
+    An interesting example is `Dyck Language <https://en.wikipedia.org/wiki/Dyck_language>`_ used in the parsing of
+    expression that must have a correctly nested sequence of brackets.
 
 Type 3 - Regular Grammars
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Regular languages are the simplest and are recognized by finite state machines. Their production are restrictive and
+align with constructs like regular expressions.
+
 **Formalization**
 
+    * :math:`A \to aB`
+    * or :math:`A \to a`
 
-This work led to a distinction being made between functions that are theoretically computable and those that are not, even theoretically. (A function is said to be computable if it can be calculated by the Turing machine in finite time (number of operations).
+where
 
-A finite-state automaton is an abstract machine made up of states and transitions. This machine is designed to process
-words supplied as input: the automaton moves from state to state, according to the transitions, on reading each letter
-of the input. The automaton is said to be “finite” because it has a finite number of distinct states: it therefore only
-has a bounded memory, irrespective of the size of the data on which calculations are performed.
+    * :math:`A,B \in N`
+    * :math:`a \in \Sigma`
 
-Finite-state automata provide a particularly simple tool for constructing algorithms. They are also found in the study
-of formal languages, in compilers and also in the search for regular expressions in texts.They are used in process
-modeling, control, communication protocols, program verification and computability theory.
+Example
+
+    * :math:`\Sigma = \{hello,\ goodbye\}`
+    * Grammar
+
+        * :math:`S \to hello\ A`
+        * :math:`A \to goodbye`
+
+    Result : :math:`\{hello\ goodbye\}`

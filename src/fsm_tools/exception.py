@@ -95,6 +95,16 @@ class InvalidStateTransitionError(StateMachineValueError):
     """
 
     def __init__(self, message: str = None, code: int = 0) -> None:
+        """
+        This class implements the transition exception basis for finite-state machines and automata.
+
+        :param message: handle event that cause the exception to be raised.
+        :type message: str
+        :param code: internal code of the exception for future uses.
+        :type code: int
+        :return: None.
+        :rtype: None
+        """
         msg = "The requested transition event already exists. The event " + message + " is already registered."
         super().__init__(msg, code)
 
@@ -104,5 +114,15 @@ class InvalidStateTriggerError(StateMachineValueError):
     """
 
     def __init__(self, message: str = None, code: int = 0) -> None:
+        """
+        This class implements the trigger exception basis for finite-state machines and automata.
+
+        :param message: handle event that cause the exception to be raised.
+        :type message: str
+        :param code: internal code of the exception for future uses.
+        :type code: int
+        :return: None.
+        :rtype: None
+        """
         msg = "The requested trigger event is not registered. The event " + message + " is not registered in transitions dictionary."
         super().__init__(msg, code)
