@@ -31,6 +31,7 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.todo',
     'sphinx_rtd_theme',
+    'sphinx.ext.mathjax'
 ]
 
 templates_path = ['source/_templates']
@@ -45,4 +46,7 @@ language = 'en'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'sphinx_rtd_theme'
-html_static_path = ['source/_static']
+html_static_path = ['_static']
+
+mathjax_path = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js'
+mathjax3_config = {'chtml': {'displayAlign': 'left', 'displayIndent': '2em'}}
