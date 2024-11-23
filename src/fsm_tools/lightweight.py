@@ -24,8 +24,8 @@ class FSM:
 
     def __init__(self, initial_states: Any):
         """
-        This function initializes the FSM class. It requires to define the initial states as a string. it also
-        initializes the ``transitions`` dictionary.
+        This initializing method sets an instance the FSM class. It requires to define the initial states as a string.
+        it also initializes the ``transitions`` dictionary to an emtpy one.
 
         :param initial_states: initial states
         :type initial_states: any
@@ -89,22 +89,29 @@ class FSM:
 
 class ExtFSM(FSM):
     """
-    This class extends simple FSM with memory of previous state
+    This class extends simple FSM with memory of previous state. It inherits from FSM class and extended storage of a
+    *previous* state.
     """
 
     def __init__(self, initial_states: Any):
         """
-        This function initializes the ExtFSM class.
+        This initializing method sets an instance the ExtFSM class using its upper method and set previous state to
+        None.
 
         :param initial_states: initial states
+        :type initial_states: any
         :return: None
+        :rtype: None
         """
         super().__init__(initial_states)
         self.previous = None
 
-    def reset(self):
+    def reset(self) -> None:
         """
         This function reset to initial state ExtFSM instance.
+
+        :return: None
+        :rtype: None
         """
         super().reset()
         self.previous = None
@@ -114,13 +121,18 @@ class ExtFSM(FSM):
         This function returns the previous state of the ExtFSM.
 
         :return: the previous state of the ExtFSM.
+        :rtype: Any
         """
         return self.previous
 
     def trigger(self, event: Any) -> None:
         """
         This function triggers the event on the ExtFSM.
+
         :param event: the event to trigger
+        :type event: Any
+        :return: None
+        :rtype: None
         """
         previous = self.get_state()
         super().trigger(event)
