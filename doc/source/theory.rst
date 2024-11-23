@@ -1,11 +1,5 @@
 Introduction to Formal Language Theory and Finite State Machines
-================================================================
-
-.. toctree::
-    alphabet
-    kleene
-    chomsky
-    fsm
+****************************************************************
 
 Formal language theory and finite state machines (FSMs) - or automata (FSA) - provide a foundation for understanding how
 computational systems operate and how structured languages are defined and processed.
@@ -52,3 +46,12 @@ be taken up again in advanced implementation of finite state automata. Below you
     4. The Chomsky Hierarchy
     5. Finite State Machines
     6. Building an FSM from a Regular Grammar
+
+
+**Detailed Chapter Content**
+
+.. toctree::
+    alphabet
+    kleene
+    chomsky
+    fsm

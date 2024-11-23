@@ -42,3 +42,4 @@ Django framework extensions
 .. autoclass:: ContextFSM
 
     .. automethod:: as_dict
+    .. automethod:: add_to_context
