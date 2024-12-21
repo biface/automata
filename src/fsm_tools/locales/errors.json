@@ -1,0 +1,66 @@
+{
+  "de-DE": {
+    "add": "Fehler beim Hinzufügen des Objekts:",
+    "remove": "Fehler beim Entfernen des Objekts:",
+    "modify": "Fehler beim Ändern des Objekts: Ungültiger Zustand",
+    "validate": "Validierung fehlgeschlagen für: Prüfung der Zustand-Maschinen-Integrität",
+    "search": "Fehler beim Finden des Objekts: Übergang nicht definiert",
+    "withdraw": "Fehler beim Zurückziehen der Komponente: Stapelüberlauf"
+  },
+  "en-GB": {
+    "add": "Failed to add object:",
+    "remove": "Failed to remove object:",
+    "modify": "Failed to modify object: Invalid value for state",
+    "validate": "Validation failed for: State machine integrity check",
+    "search": "Failed to find object: Transition not defined",
+    "withdraw": "Failed to withdraw component: Stack overflow"
+  },
+  "en-US": {
+    "add": "Failed to add object:",
+    "remove": "Failed to remove object:",
+    "modify": "Failed to modify object: Invalid value for state",
+    "validate": "Validation failed for: State machine integrity check",
+    "search": "Failed to find object: Transition not defined",
+    "withdraw": "Failed to withdraw component: Stack overflow"
+  },
+  "es-ES": {
+    "add": "Error al agregar el objeto:",
+    "remove": "Error al eliminar el objeto:",
+    "modify": "Error al modificar el objeto: Valor inválido para el estado",
+    "validate": "Falló la validación para: Verificación de la integridad de la máquina de estados",
+    "search": "Error al encontrar el objeto: Transición no definida",
+    "withdraw": "Error al retirar el componente: Desbordamiento de pila"
+  },
+  "fr-FR": {
+    "add": "Échec de l'ajout de l'objet :",
+    "remove": "Échec de la suppression de l'objet :",
+    "modify": "Échec de la modification de l'objet : Valeur invalide pour l'état",
+    "validate": "Échec de la validation pour : Vérification de l'intégrité de la machine à états",
+    "search": "Échec de la recherche de l'objet : Transition non définie",
+    "withdraw": "Échec du retrait du composant : Dépassement de pile"
+  },
+  "ga-IE": {
+    "add": "Theip ar ruda a chur leis:",
+    "remove": "Theip ar ruda a bhaint:",
+    "modify": "Theip ar ruda a mhodhnú: Luach neamhbhailí don stát",
+    "validate": "Theip ar bhailíochtú do: Seiceáil sláine meaisín stáit",
+    "search": "Theip ar an rud a aimsiú: Níl an t-aistriú sainmhínithe",
+    "withdraw": "Theip ar an gcomhpháirt a tharraingt siar: Ró-shreabhadh cruachta"
+  },
+  "it-IT": {
+    "add": "Errore nell'aggiunta dell'oggetto:",
+    "remove": "Errore nella rimozione dell'oggetto:",
+    "modify": "Errore nella modifica dell'oggetto: Valore non valido per lo stato",
+    "validate": "Errore nella validazione di: Controllo dell'integrità della macchina a stati",
+    "search": "Errore nel trovare l'oggetto: Transizione non definita",
+    "withdraw": "Errore nel ritirare il componente: Stack overflow"
+  },
+  "sv-SV": {
+    "add": "Misslyckades med att lägga till objektet:",
+    "remove": "Misslyckades med att ta bort objektet:",
+    "modify": "Misslyckades med att ändra objektet: Ogiltigt värde för tillstånd",
+    "validate": "Validering misslyckades för: Kontroll av tillståndsmaskinens integritet",
+    "search": "Misslyckades med att hitta objektet: Övergång inte definierad",
+    "withdraw": "Misslyckades med att dra tillbaka komponenten: Stacköverflöde"
+  }
+}
