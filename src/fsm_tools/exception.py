@@ -145,7 +145,7 @@ class AutomatonException(Exception):
         General exception messages are fetched from `exception_msg.mo`.
     """
 
-    def __init__(self, grammar: str, component: str, action: str, locale: str = None) -> None:
+    def __init__(self, grammar: str, component: str, action: str, locale: str = None, **event) -> None:
         """
         This class implements the exception basis for formal grammar automata.
 
@@ -180,6 +180,9 @@ class AutomatonException(Exception):
         self.value = 1000 * CHOMSKY_GRAMMARS[self.grammar] + 100 * COMPONENTS[self.component] + ACTIONS[self.action]
         self.locale = locale
         self.message = get_message(str(self.value), self.locale)
+
+        if event:
+            msg = get_message(str(self.value), self.locale)
         super().__init__(self.message)
 
     def set_locale(self, new_locale: str) -> None:
