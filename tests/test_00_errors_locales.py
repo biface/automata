@@ -31,7 +31,7 @@ def test_load_with_exception():
     ("1203", "automata", "fr-FR", "Supprimer une transition d'une machine de Turing."),
     ("3102", "automata", "de-DE", "Füge ein Symbol zum Alphabet eines Kellerautomaten hinzu."),
     ("1506", "automata", "it-IT", "È stato rilevato un ciclo infinito durante l'esecuzione."),
-    ("4602", "errors", "sv-SV", "Inget initialt tillstånd definierat."),
+    ("4605", "errors", "sv-SV", "Den ändliga automaten är ogiltig: {reason}."),
 ])
 def test_seek_messages(msg_id, domain, lang, expected):
     result = seek_message(msg_id, domain, lang)
@@ -254,16 +254,19 @@ def test_generate_message(lang, grammar, component, action, expected_msg):
 
 @pytest.mark.parametrize("lang, msg_id, txt, expected_msg", [
     ("de-DE", "1102", {'symbol': "U"},
-     "Das Symbol 'U' kann nicht hinzugefügt werden, da es bereits im Alphabet vorhanden ist oder ein Nichtterminal ist."),
-    ("en-GB", "1303", {'symbol': "Open"},
-     "Unable to remove the symbol 'Open' because it does not exist in the states."),
-    ("en-US", "2202", {'lhs': "Locked", 'rhs': "Unlocked"},
-     "The rule 'Locked' -> 'Unlocked' is invalid or conflicts with the context-free grammar."),
-    ("es-ES", "4203", {'symbol': "sUs"}, "La regla para el no-terminal 'sUs' es inválida."),
-    ("fr-FR", "2605", {'symbol': "[(x + y)]"},
-     "La chaîne '[(x + y)]' ne peut pas être analysée par l'automate à pile."),
-    ("ga-IE", "4602", {}, "Níl aon stát tosaigh sainmhínithe."),
-    ("it-IT", "1103", {'symbol': "*"}, "Impossibile rimuovere il simbolo '*' poiché non è presente nell'alfa.")
+     "Das Symbol 'U' kann nicht hinzugefügt werden, da es bereits im Alphabet der Turing-Maschine existiert."),
+    ("en-GB", "2303", {'symbol': "Open"},
+     "Unable to remove the state 'Open' as it does not exist in the context-sensitive automaton."),
+    ("en-US", "2202", {'transition': "Push"},
+     "The transition 'Push' already exists in the context-sensitive automaton."),
+    ("es-ES", "4203", {'transition': "sUs"},
+     "No se puede eliminar la transición 'sUs' porque no existe en el autómata finito."),
+    ("fr-FR", "2605", {'reason': "règles mal formées"},
+     "L'automate contextuel est invalide : règles mal formées."),
+    ("ga-IE", "3302", {'symbol': 'N'}, "Tá an staid 'N' cheana san aonad puinse."),
+    ("it-IT", "1103", {'symbol': "*"},
+     "Impossibile rimuovere il simbolo '*' perché non esiste nell'alfabeto della macchina di Turing."),
+    ("sv-SV", "3519", {}, "Fel: försök att ta bort en symbol från en tom stack.")
 ])
 def test_get_errors_message(lang, msg_id, txt, expected_msg):
     result = get_message(msg_id, "errors", lang, **txt)
@@ -272,18 +275,19 @@ def test_get_errors_message(lang, msg_id, txt, expected_msg):
 
 @pytest.mark.parametrize("lang, grammar, component, action, txt, expected_msg", [
     ("de-DE", "Recursively Enumerable", "alphabet", "add", {'symbol': "U"},
-     "Das Symbol 'U' kann nicht hinzugefügt werden, da es bereits im Alphabet vorhanden ist oder ein Nichtterminal ist."),
-    ("en-GB", "Recursively Enumerable", "states", "remove", {'symbol': "Open"},
-     "Unable to remove the symbol 'Open' because it does not exist in the states."),
-    ("en-US", "Context-Sensitive", "transitions", "add", {'lhs': "Locked", 'rhs': "Unlocked"},
-     "The rule 'Locked' -> 'Unlocked' is invalid or conflicts with the context-free grammar."),
-    ("es-ES", "Regular", "transitions", "remove", {'symbol': "sUs"}, "La regla para el no-terminal 'sUs' es inválida."),
-    ("fr-FR", "Context-Sensitive", "validation", "validate", {'symbol': "[(x + y)]"},
-     "La chaîne '[(x + y)]' ne peut pas être analysée par l'automate à pile."),
-    ("ga-IE", "Regular", "validation", "add", {},
-     "Níl aon stát tosaigh sainmhínithe."),
+     "Das Symbol 'U' kann nicht hinzugefügt werden, da es bereits im Alphabet der Turing-Maschine existiert."),
+    ("en-GB", "Context-Sensitive", "states", "remove", {'symbol': "Open"},
+     "Unable to remove the state 'Open' as it does not exist in the context-sensitive automaton."),
+    ("en-US", "Context-Sensitive", "transitions", "add", {'transition': "Push"},
+     "The transition 'Push' already exists in the context-sensitive automaton."),
+    ("es-ES", "Regular", "transitions", "remove", {'transition': "sUs"},
+     "No se puede eliminar la transición 'sUs' porque no existe en el autómata finito."),
+    ("fr-FR", "Context-Sensitive", "validation", "validate", {'reason': "règles mal formées"},
+     "L'automate contextuel est invalide : règles mal formées."),
+    ("ga-IE", "Context-Free", "states", "add", {'symbol': 'N'}, "Tá an staid 'N' cheana san aonad puinse."),
     ("it-IT", "Recursively Enumerable", "alphabet", "remove", {'symbol': "*"},
-     "Impossibile rimuovere il simbolo '*' poiché non è presente nell'alfa.")
+     "Impossibile rimuovere il simbolo '*' perché non esiste nell'alfabeto della macchina di Turing."),
+    ("sv-SV", "Context-Free", "stack", "withdraw", {}, "Fel: försök att ta bort en symbol från en tom stack.")
 ])
 def test_generate_errors_message(lang, grammar, component, action, txt, expected_msg):
     result = generate_message(grammar, component, action, "errors", lang, **txt)
@@ -296,8 +300,8 @@ def test_generate_errors_message(lang, grammar, component, action, txt, expected
      "The message with ID '4119' was not found for language 'en-US'."),
     ("Regular", "states", "read", "automaton", "fr-FR", {}, FileNotFoundError,
      "The JSON file for domain 'automaton' was not found."),
-    ("Regular", "validation", "modify", "errors", "sv-SV", {'symbol': "U"}, ValueError,
-     "The parameter 'component' is missing for formatting the message.")
+    ("Regular", "validation", "validate", "errors", "sv-SV", {'symbol': "U"}, ValueError,
+     "The parameter 'reason' is missing for formatting the message.")
 ])
 def test_generate_message_with_exception(grammar, component, action, domain, lang, txt, expected_exception,
                                          expected_msg):

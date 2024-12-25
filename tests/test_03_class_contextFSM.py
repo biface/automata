@@ -104,52 +104,27 @@ def test_turnstile_reset_django_context_success():
     assert turnstile.as_dict()['current'] == 'locked'
     assert turnstile.as_dict()['previous'] is None
 
-def test_turnstile_cycle_1_success():
-    turnstile.trigger('coin')
-    assert turnstile.current == "unlocked"
-    assert turnstile.previous == "locked"
-
-def test_turnstile_cycle_1_django_context_success():
-    assert turnstile.as_dict()['current'] == 'unlocked'
-    assert turnstile.as_dict()['previous'] == "locked"
-
-def test_turnstile_cycle_2_success():
-    turnstile.trigger('coin')
-    assert turnstile.current == "unlocked"
-    assert turnstile.previous == "unlocked"
-
-def test_turnstile_cycle_2_django_context_success():
-    assert turnstile.as_dict()['current'] == "unlocked"
-    assert turnstile.as_dict()['previous'] == "unlocked"
-
-def test_turnstile_cycle_3_success():
-    turnstile.trigger('push')
-    assert turnstile.current == "locked"
-    assert turnstile.previous == "unlocked"
-
-def test_turnstile_cycle_3_django_context_success():
-    assert turnstile.as_dict()['current'] == "locked"
-    assert turnstile.as_dict()['previous'] == "unlocked"
-
-def test_turnstile_cycle_4_success():
-    turnstile.trigger('coin')
-    assert turnstile.current == "unlocked"
-    assert turnstile.previous == "locked"
-
-def test_turnstile_cycle_4_django_context_success():
-    assert turnstile.as_dict()['current'] == "unlocked"
-    assert turnstile.as_dict()['previous'] == "locked"
-
-def test_turnstile_cycle_5_success():
-    turnstile.trigger('push')
-    assert turnstile.current == "locked"
-
-def test_turnstile_cycle_5_django_context_success():
-    assert turnstile.as_dict()['current'] == "locked"
-
-def test_turnstile_cycle_6_success():
-    turnstile.trigger('push')
-    assert turnstile.current == "locked"
-
-def test_turnstile_cycle_6_django_context_success():
-    assert turnstile.as_dict()['current'] == "locked"
+@pytest.mark.parametrize("event, exp_state, exp_previous", [
+    ("coin", "unlocked", "locked"),
+    ("coin", "unlocked", "unlocked"),
+    ("push", "locked", "unlocked"),
+    ("coin", "unlocked", "locked"),
+    ("coin", "unlocked", "unlocked"),
+    ("push", "locked", "unlocked"),
+    ("push", "locked", "locked"),
+    ("coin", "unlocked", "locked"),
+    ("push", "locked", "unlocked"),
+    ("coin", "unlocked", "locked"),
+    ("coin", "unlocked", "unlocked"),
+    ("coin", "unlocked", "unlocked"),
+    ("coin", "unlocked", "unlocked"),
+    ("coin", "unlocked", "unlocked"),
+    ("push", "locked", "unlocked"),
+    ("push", "locked", "locked"),
+])
+def test_turnstile_cycle(event, exp_state, exp_previous):
+    turnstile.trigger(event)
+    assert turnstile.current == exp_state
+    assert turnstile.previous == exp_previous
+    assert turnstile.as_dict()['current'] == exp_state
+    assert turnstile.as_dict()['previous'] == exp_previous

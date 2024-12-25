@@ -67,33 +67,28 @@ def test_turnstile_reset_success():
     assert turnstile.current == "locked"
     assert turnstile.previous is None
 
-def test_turnstile_cycle_1_success():
-    turnstile.trigger('coin')
-    assert turnstile.current == "unlocked"
-    assert turnstile.previous == "locked"
-
-def test_turnstile_cycle_2_success():
-    turnstile.trigger('coin')
-    assert turnstile.current == "unlocked"
-    assert turnstile.previous == "unlocked"
-
-def test_turnstile_cycle_3_success():
-    turnstile.trigger('push')
-    assert turnstile.current == "locked"
-    assert turnstile.previous == "unlocked"
-
-def test_turnstile_cycle_4_success():
-    turnstile.trigger('coin')
-    assert turnstile.current == "unlocked"
-    assert turnstile.previous == "locked"
-
-def test_turnstile_cycle_5_success():
-    turnstile.trigger('push')
-    assert turnstile.current == "locked"
-
-def test_turnstile_cycle_6_success():
-    turnstile.trigger('push')
-    assert turnstile.current == "locked"
+@pytest.mark.parametrize("event, exp_state, exp_previous", [
+    ("coin", "unlocked", "locked"),
+    ("coin", "unlocked", "unlocked"),
+    ("push", "locked", "unlocked"),
+    ("coin", "unlocked", "locked"),
+    ("coin", "unlocked", "unlocked"),
+    ("push", "locked", "unlocked"),
+    ("push", "locked", "locked"),
+    ("coin", "unlocked", "locked"),
+    ("push", "locked", "unlocked"),
+    ("coin", "unlocked", "locked"),
+    ("coin", "unlocked", "unlocked"),
+    ("coin", "unlocked", "unlocked"),
+    ("coin", "unlocked", "unlocked"),
+    ("coin", "unlocked", "unlocked"),
+    ("push", "locked", "unlocked"),
+    ("push", "locked", "locked"),
+])
+def test_turnstile_cycle(event, exp_state, exp_previous):
+    turnstile.trigger(event)
+    assert turnstile.current == exp_state
+    assert turnstile.previous == exp_previous
 
 def test_turnstile_trigger_error():
     previous = turnstile.get_previous()

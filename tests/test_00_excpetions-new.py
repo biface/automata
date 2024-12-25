@@ -1,13 +1,12 @@
 import pytest
 from fsm_tools.exception import (
     AutomatonException,
-    ReadException,
+    ReadError,
     AddError,
     RemoveError,
     ModifyError,
     ValidationError,
     SearchError,
-    RemoveComponentError
 )
 from fsm_tools.constants import CHOMSKY_GRAMMARS, COMPONENTS, ACTIONS
 
@@ -55,19 +54,31 @@ def test_automaton_exception_invalid_inputs(grammar, component, action):
 
 # Test: Specialized Exceptions
 @pytest.mark.parametrize("exception_cls, action", [
-    (ReadException, "read"),
+    (ReadError, "read"),
     (AddError, "add"),
     (RemoveError, "remove"),
     (ModifyError, "modify"),
-    (ValidationError, "validate"),
-    (SearchError, "search"),
-    (RemoveComponentError, "withdraw"),
 ])
 def test_specialized_exceptions(exception_cls, action, valid_inputs):
     exc = exception_cls(
         grammar_level=valid_inputs["grammar"],
         component=valid_inputs["component"],
         locale=valid_inputs["locale"]
+    )
+    assert exc.message is not None
+    assert exc.action == action
+
+# Test : Specific actions
+
+@pytest.mark.parametrize("exception_cls, grammar, component, action", [
+    (ValidationError, "Regular", "validation", "validate"),
+    (SearchError, "Context-Free", "validation", "search"),
+])
+def test_specialized_exceptions(exception_cls, grammar, component, action):
+    exc = exception_cls(
+        grammar_level=grammar,
+        component=component,
+        locale="en-US"
     )
     assert exc.message is not None
     assert exc.action == action

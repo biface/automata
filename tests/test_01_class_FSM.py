@@ -56,29 +56,25 @@ def test_turnstile_reset_success():
     assert turnstile.current == "locked"
     assert turnstile.initial == "locked"
 
-def test_turnstile_cycle_1_success():
-    turnstile.trigger('coin')
-    assert turnstile.current == "unlocked"
-
-def test_turnstile_cycle_2_success():
-    turnstile.trigger('coin')
-    assert turnstile.current == "unlocked"
-
-def test_turnstile_cycle_3_success():
-    turnstile.trigger('push')
-    assert turnstile.current == "locked"
-
-def test_turnstile_cycle_4_success():
-    turnstile.trigger('coin')
-    assert turnstile.current == "unlocked"
-
-def test_turnstile_cycle_5_success():
-    turnstile.trigger('push')
-    assert turnstile.current == "locked"
-
-def test_turnstile_cycle_6_success():
-    turnstile.trigger('push')
-    assert turnstile.current == "locked"
+@pytest.mark.parametrize("event, exp_state", [
+    ("coin", "unlocked"),
+    ("coin", "unlocked"),
+    ("push", "locked"),
+    ("coin", "unlocked"),
+    ("push", "locked"),
+    ("push", "locked"),
+    ("coin", "unlocked"),
+    ("push", "locked"),
+    ("coin", "unlocked"),
+    ("push", "locked"),
+    ("push", "locked"),
+    ("coin", "unlocked"),
+    ("coin", "unlocked"),
+    ("push", "locked"),
+])
+def test_turnstile_cycle(event, exp_state):
+    turnstile.trigger(event)
+    assert turnstile.current == exp_state
 
 def test_turnstile_transition_error():
     with pytest.raises(InvalidStateTransitionError):
