@@ -7,13 +7,26 @@ purposes only.
 .. module:: fsm_tools
     :no-index:
 
+Constants
+---------
+
+.. automodule:: fsm_tools.constants
+.. autodata:: CHOMSKY_GRAMMARS
+.. autodata:: COMPONENTS
+.. autodata:: ACTIONS
+
 Exceptions
 ----------
 
 .. automodule:: fsm_tools.exception
-    :private-members: StateMachineException, StateMachineTypeError, StateMachineValueError
-.. autoexception:: InvalidStateTransitionError
-.. autoexception:: InvalidStateTriggerError
+.. autoexception:: AutomatonException
+.. autoexception:: ReadError
+.. autoexception:: AddError
+.. autoexception:: RemoveError
+.. autoexception:: ModifyError
+.. autoexception:: ValidationError
+.. autoexception:: SearchError
+.. autoexception:: RemoveComponentError
 
 Lightweight finite state machine
 --------------------------------
@@ -43,3 +56,10 @@ Django framework extensions
 
     .. automethod:: as_dict
     .. automethod:: add_to_context
+
+Advanced Automata
+-----------------
+
+.. automodule:: fsm_tools.advanced
+.. autoclass:: Grammar
+.. autoclass:: Automaton

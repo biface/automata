@@ -1,4 +1,45 @@
-from .exception import InvalidStateTransitionError, InvalidStateTriggerError, AddError, ReadError
+"""
+Finite State Machine (FSM) and Extended FSM (extFSM) Implementation
+===================================================================
+
+This module provides an implementation of a basic **Finite State Machine (FSM)** and an
+extended version, **extFSM**, which retains additional state information for advanced
+processing.
+
+The FSM is a computational model used to represent a system with a finite number of states
+and transitions between them. It is widely used in parsing, control systems, and language
+processing. The FSM implementation in this module is lightweight and focuses on simplicity
+and clarity.
+
+The extended FSM (extFSM) builds upon the basic FSM by introducing the ability to track
+the previous state before transitioning to the current state. This enhancement is useful
+in scenarios where the history of state changes needs to be preserved for validation,
+logging, or decision-making purposes.
+
+Features:
+---------
+1. **FSM**:
+    - Represents a finite state machine with a finite set of states.
+    - Allows transitions between states based on defined conditions.
+    - Maintains a record of the current state.
+
+2. **extFSM**:
+    - Extends the FSM by storing the previous state alongside the current state.
+    - Facilitates historical state tracking for advanced workflows.
+
+Use Cases:
+----------
+- Finite State Machines (FSM):
+    Ideal for modeling deterministic systems such as lexical analyzers, traffic lights, or
+    simple control systems.
+
+- Extended FSM (extFSM):
+    Suitable for scenarios requiring state transition history, such as debugging,
+    multi-step validation, or complex control mechanisms.
+
+"""
+
+from .exception import AddError, ReadError
 from typing import Any
 
 class FSM:
