@@ -1,7 +1,7 @@
 import pytest
 
 from fsm_tools.lightweight import ExtFSM
-from fsm_tools.exception import InvalidStateTriggerError
+from fsm_tools.exception import ReadError
 
 turnstile = ExtFSM('locked')
 
@@ -92,6 +92,6 @@ def test_turnstile_cycle(event, exp_state, exp_previous):
 
 def test_turnstile_trigger_error():
     previous = turnstile.get_previous()
-    with pytest.raises(InvalidStateTriggerError):
+    with pytest.raises(ReadError):
         turnstile.trigger('pull')
     assert turnstile.previous == previous

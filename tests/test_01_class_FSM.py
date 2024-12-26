@@ -1,7 +1,7 @@
 import pytest
 
 from fsm_tools.lightweight import FSM
-from fsm_tools.exception import InvalidStateTransitionError, InvalidStateTriggerError
+from fsm_tools.exception import AddError, ReadError
 
 turnstile = FSM('locked')
 
@@ -77,9 +77,15 @@ def test_turnstile_cycle(event, exp_state):
     assert turnstile.current == exp_state
 
 def test_turnstile_transition_error():
-    with pytest.raises(InvalidStateTransitionError):
+    with pytest.raises(AddError) as exc_add:
         turnstile.add_transition('locked', 'unlocked', 'coin')
+    exc = exc_add.value
+    assert exc.grammar == "Regular"
+    assert exc.component == "transitions"
+    assert exc.value == 4202
 
 def test_turnstile_trigger_error():
-    with pytest.raises(InvalidStateTriggerError):
+    with pytest.raises(ReadError) as exc_read:
         turnstile.trigger('pull')
+    exc_read = exc_read.value
+    assert exc_read.value == 4201
