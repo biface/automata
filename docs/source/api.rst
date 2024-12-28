@@ -62,4 +62,37 @@ Advanced Automata
 
 .. automodule:: fsm_tools.advanced
 .. autoclass:: Grammar
+
+    .. automethod:: get_type
+    .. automethod:: reset_alphabet
+    .. automethod:: reset_states
+    .. automethod:: reset_rules
+    .. automethod:: reset
+
 .. autoclass:: Automaton
+
+    .. automethod:: get_terminals
+    .. automethod:: add_terminals
+    .. automethod:: remove_terminals
+    .. automethod:: modify_terminal
+    .. automethod:: withdraw_terminal
+    .. automethod:: get_states
+    .. automethod:: add_non_terminals
+    .. automethod:: remove_non_terminals
+    .. automethod:: modify_non_terminal
+    .. automethod:: withdraw_non_terminal
+    .. automethod:: get_rules
+    .. automethod:: add_rules
+    .. automethod:: remove_rules
+    .. automethod:: withdraw_rules
+    .. automethod:: withdraw_grammar
+
+.. autoclass:: TuringMachine
+
+    .. automethod:: set_tape
+    .. automethod:: set_register
+    .. automethod:: set_moves
+    .. automethod:: read
+    .. automethod:: write
+    .. automethod:: move
+    .. automethod:: add_transition
