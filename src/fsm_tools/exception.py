@@ -97,7 +97,7 @@ class AutomatonError(AutomatonException):
 
     def generate_message(self, locale: str) -> str:
         automaton_msg = super().generate_message(locale)
-        if self.event is not None:
+        if len(self.event) > 0:
             try:
                 error_msg = generate_message(self.grammar, self.component, self.action, self.domains[1], self.locale,
                                              **self.event['format'])
@@ -107,7 +107,7 @@ class AutomatonError(AutomatonException):
                 self.group.add_exception(self.event['cls'](error_msg))
                 automaton_msg += "\n" + error_msg
             except KeyError as e:
-                print("Error :", e)
+                raise e
         return automaton_msg
 
 
