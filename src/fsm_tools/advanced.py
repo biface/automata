@@ -398,7 +398,7 @@ class TuringMachine(Automaton):
 
     """
 
-    def __init__(self, name: str, axes: int = 1, blank_symbol: str = "_", movement: dict = {"F": 1, "B": -1},
+    def __init__(self, name: str, axes: int = 1, blank_symbol: str = "_", movement: dict = {"F": [1], "B": [-1]},
                  register: str = "", accept: str = "OK", reject: str = "nOK"):
         """
         Initializes the Turing Machine with a given name and the blank symbol (defaults to "_").
@@ -551,7 +551,7 @@ class TuringMachine(Automaton):
 
         # Get the movement increments for the given direction
         axis = 0
-        if self.axes > 1 :
+        if self.axes > 1 or isinstance(self.moves[direction], list):
             for dx in self.moves[direction]:
                 self.head[axis] = self.head[axis] + dx
                 axis += 1
