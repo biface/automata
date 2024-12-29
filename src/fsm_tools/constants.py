@@ -37,7 +37,12 @@ COMPONENTS = {
         'transitions': 2,
         'stack': 5,
         'grammar': 4,
-        'validation': 6
+        'validation': 6,
+        'tape': 7,
+        'head': 8,
+        'moves': 9,
+        'register': 10,
+        'blank': 11
     }
 """
 COMPONENTS is a dictionary that assigns a unique integer value to each key 
@@ -67,7 +72,9 @@ ACTIONS = {
         'modify': 4,
         'validate': 5,
         'search': 6,
-        'withdraw': 19
+        'withdraw': 19,
+        'write': 7,
+        'move': 8,
     }
 """
 ACTIONS is a dictionary that maps common operations or actions to unique integer values, 
