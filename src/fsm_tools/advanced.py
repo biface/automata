@@ -126,6 +126,13 @@ class Automaton:
             raise KeyError(f"Chomsky hierarchy: key '{chomsky}' not recognized.")
         self.grammar = Grammar(self)
 
+    def change_classification(self, classification:str):
+        if classification in CHOMSKY_GRAMMARS.keys():
+            self.GRAMMAR = CHOMSKY_GRAMMARS[classification]
+            self.TYPE = CHOMSKY_GRAMMARS[classification] - 1
+        else:
+            raise KeyError(f"Chomsky hierarchy: key '{classification}' not recognized.")
+
     def get_terminals(self, ):
         """
         Returns the set of terminal symbols (alphabet) used in the grammar.
@@ -340,7 +347,7 @@ class TuringMachine(Automaton):
         blank (str): The blank symbol, representing an empty or uninitialized tape cell.
         moves (str): Defines movements allowed to the Turing Machine. Default moves allowed are forward (**F**) and
                      backward (**B**). Turing Machines may have more than 2 movements.
-        state (dict): A dictionary that stores the accept and reject states of the Turing Machine.
+        validation (dict): A dictionary that stores the accept and reject states of the Turing Machine.
                       The machine halts when it enters the accept or reject state.
 
     Methods:
@@ -429,7 +436,7 @@ class TuringMachine(Automaton):
         self.moves = movement
         self.add_terminals(blank_symbol)
         self.add_non_terminals(register)
-        self.state = dict([('accept', accept), ('reject', reject)])
+        self.validation = dict([('accept', accept), ('reject', reject)])
         self.add_non_terminals(accept)
         self.add_non_terminals(reject)
 
@@ -468,10 +475,16 @@ class TuringMachine(Automaton):
         :rtype: None
         :raise ReadError: If any symbol in the tape_content is not part of the alphabet.
         """
-        for content in self.tape:
+        if self.axes == 1:
             for symbol in content:
                 if symbol not in self.get_terminals():
-                    ReadError(self.GRAMMAR, "alphabet", symbol=symbol)
+                    raise ReadError(self.GRAMMAR, "alphabet", symbol=symbol)
+        else:
+            for content in self.tape:
+                for symbol in content:
+                    if symbol not in self.get_terminals():
+                        raise ReadError(self.GRAMMAR, "alphabet", symbol=symbol)
+
         self.tape = content
 
         if location is None:
@@ -620,5 +633,117 @@ class TuringMachine(Automaton):
                 self.register = state_to
                 self.add_non_terminals(state_to)  # Add the new state to the set of states
                 break  # Exit after finding and executing a valid rule
+        else:
+            raise Exception(f"No valid transition for state '{self.register}' and symbol '{current_symbol}'.")
+
+
+class LinearBoundedAutomaton(TuringMachine):
+    """
+    Represents a Linear Bounded Automaton (LBA), a type of automaton that simulates
+    a Turing Machine but with a tape limited to the size of the input.
+    This model can recognize context-sensitive languages (Type 1 in the Chomsky hierarchy).
+
+    LBAs operate on a tape of finite size, which is determined by the size of the input.
+    This makes them more powerful than pushdown automata but less powerful than classical
+    Turing Machines which have an infinite tape.
+
+    Attributes:
+        tape (list): The tape (or array) on which the automaton operates. Each cell contains
+                     a symbol from the alphabet. The tape size is bounded by the input size.
+        head (int): The position of the read/write head on the tape. It moves according to the rules.
+        register (str): The current state of the automaton. It is used to determine the next action based
+                        on the current state and the symbol under the head.
+        blank (str): The blank symbol representing an empty or uninitialized tape cell.
+        limit (int): The size of the input, which limits the tape size.
+        validation (dict): A dictionary that contains the accept and reject states of the automaton.
+
+    Methods:
+        step(self):
+            Executes one step of the automaton based on the current state and the symbol under the head.
+            The automaton transitions to a new state, writes a symbol, and moves the head.
+
+        get_rules(self):
+            Returns the list of current rules of the automaton. These rules are associated with the LBA grammar.
+
+        extend_tape(self):
+            Dynamically extends the tape but never exceeds the input size.
+
+    """
+
+    def __init__(self, name: str, tape_size: int, blank_symbol: str = "_", movement: dict = {"F": [1], "B": [-1]},
+                 register: str = "", accept: str = "OK", reject: str = "nOK"):
+        """
+        Initializes the Linear Bounded Automaton with a given name, input size, and blank symbol (defaults to "_").
+        Inherits from the `TuringMachine` class and initializes the tape, head, index, and state.
+
+        :param name: The name of the automaton.
+        :type name: str
+        :param tape_size: The input size (defines the tape limit).
+        :type tape_size: int
+        :param blank_symbol: The blank symbol representing an empty tape cell.
+        :type blank_symbol: str | "_"
+        :param movement: A dictionary of allowed movements.
+        :type movement: dict
+        :param register: The current state of the automaton.
+        :type register: str | ""
+        :param accept: The accept state.
+        :type accept: str | "OK"
+        :param reject: The reject state.
+        :type reject: str | "nOK"
+        """
+        super().__init__(name, axes=1, blank_symbol=blank_symbol, movement=movement, register=register, accept=accept,
+                         reject=reject)
+        self.change_classification("Context-Sensitive")
+        self.limit = tape_size  # Input size, defining the tape size limit.
+
+    def _extend_tape(self, location: list) -> None:
+        """
+        Dynamically extends the tape but stays within the input size limit.
+
+        :param location: The current position of the head.
+        :type location: list
+        """
+        if abs(location[0]) >= self.limit:
+            raise IndexError(
+                f"Head position {location[0]} is out of bounds. The tape size is limited to {self.limit}.")
+
+        # Extend the tape, but ensure it doesn't exceed the input size limit
+        while len(self.tape) <= location[0]:
+            self.tape.append(self.blank)
+
+    def set_tape(self, content: list, location: List[int] = None) -> None:
+        """
+        Initializes the tape with a list of symbols and places the head at the starting index.
+        The tape size will not exceed the input size.
+
+        :param content: List of symbols to place on the tape.
+        :type content: list
+        :param location: Starting position of the head.
+        :type location: list
+        """
+        super().set_tape(content, location)
+        if len(content) > self.limit:
+            raise ValueError(f"Input size exceeds the tape limit of {self.limit}.")
+
+        # Ensure the tape is properly extended according to the input size
+        self._extend_tape(self.head)
+
+    def step(self):
+        """Executes one step of the automaton based on the current state and symbol under the head."""
+        current_symbol = self.read()
+        # Check if the head exceeds the tape boundaries
+        if abs(self.head[0]) >= self.limit:
+            raise IndexError(f"Head position {self.head[0]} exceeds the tape boundary of size {self.limit}.")
+
+        # Apply transition rules
+        for rule in self.get_rules():
+            state_from, symbol, state_to, write_symbol, move_direction = rule
+            if self.register == state_from and current_symbol == symbol:
+                # Perform the transition: write, move, and change state
+                self.write(write_symbol)
+                self.move(move_direction)
+                self.register = state_to
+                self.add_non_terminals(state_to)  # Add the new state to the set of states
+                break
         else:
             raise Exception(f"No valid transition for state '{self.register}' and symbol '{current_symbol}'.")
