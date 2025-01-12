@@ -96,3 +96,5 @@ Advanced Automata
     .. automethod:: write
     .. automethod:: move
     .. automethod:: add_transition
+
+.. autoclass:: LinearBoundedAutomaton
