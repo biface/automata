@@ -13,9 +13,11 @@ def seek_message(msg_id:str, domain:str, lang:str = None) -> str:
         lang = str(locale.getdefaultlocale()[0])
 
     locale_dir = os.path.join(os.path.dirname(__file__), "locales")
-    error_translation = gettext.translation(domain, localedir=locale_dir, languages=[lang], fallback=True)
+    lang = gettext.translation(domain, localedir=locale_dir, languages=[lang], fallback=True)
+    lang.install()
+    _ = lang.gettext
 
-    return error_translation.gettext(msg_id)
+    return _(msg_id)
 
 
 def generate_message(grammar:str, component: str, action:str, lang:str = None) -> str:

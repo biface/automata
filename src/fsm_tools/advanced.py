@@ -29,6 +29,7 @@ class Grammar:
         alphabet (set): The set of terminal symbols (the alphabet) used in the grammar.
         states (set): The set of non-terminal symbols that define the recursive structure of the grammar.
         rules (list): A list of production rules, possibly nested, that define the transformations between non-terminals and terminals.
+        start (any) : The start symbol of the grammar, that should be non-terminals component.
         automaton (Automaton): The automaton that processes the grammar and validates or generates strings.
     """
 
@@ -42,6 +43,7 @@ class Grammar:
         self.automaton = automaton
         self.alphabet = set()
         self.states = set()
+        self.start = None
         self.rules = []
 
     def get_type(self) -> int:
@@ -52,6 +54,7 @@ class Grammar:
         :rtype: int
         """
         return self.automaton.TYPE
+
 
     def reset_alphabet(self):
         """
@@ -126,7 +129,7 @@ class Automaton:
             raise KeyError(f"Chomsky hierarchy: key '{chomsky}' not recognized.")
         self.grammar = Grammar(self)
 
-    def change_classification(self, classification:str):
+    def change_classification(self, classification: str):
         if classification in CHOMSKY_GRAMMARS.keys():
             self.GRAMMAR = CHOMSKY_GRAMMARS[classification]
             self.TYPE = CHOMSKY_GRAMMARS[classification] - 1
@@ -405,8 +408,8 @@ class TuringMachine(Automaton):
 
     """
 
-    def __init__(self, name: str, axes: int = 1, blank_symbol: str = "_", movement: dict = {"F": [1], "B": [-1]},
-                 register: str = "", accept: str = "OK", reject: str = "nOK"):
+    def __init__(self, name: str, axes: int = 1, blank_symbol: str = "_", movement: dict = None,
+                 register: str = "", accept: str = "OK", reject: str = "nOK", chomsky: str = "Recursively Enumerable"):
         """
         Initializes the Turing Machine with a given name and the blank symbol (defaults to "_").
         Inherits from the base `Automaton` class and initializes the tape, head, index, and
@@ -427,18 +430,25 @@ class TuringMachine(Automaton):
         :param reject: The reject state to be initialized.
         :type reject: str | "nOK"
         """
-        super().__init__(name, "Recursively Enumerable")
+        super().__init__(name, chomsky)
         self.axes = axes
         self.tape = []
         self.head = [0] * axes
+        self.moves = {}
         self.register = register
         self.blank = blank_symbol
-        self.moves = movement
         self.add_terminals(blank_symbol)
         self.add_non_terminals(register)
         self.validation = dict([('accept', accept), ('reject', reject)])
         self.add_non_terminals(accept)
         self.add_non_terminals(reject)
+
+        if movement is None:
+            for i in range(1, axes + 1):
+                self.moves[f'F{i}'] = [1 if j == i - 1 else 0 for j in range(axes)]
+                self.moves[f'B{i}'] = [-1 if j == i - 1 else 0 for j in range(axes)]
+        else:
+            self.moves = movement
 
     def _initialize_tape(self):
         """
@@ -462,29 +472,31 @@ class TuringMachine(Automaton):
         :rtype: None
         """
 
-    def set_tape(self, content: List[Any], location:List[int] = None) -> None:
+    def set_tape(self, content: List[Any], location: List[int] = None) -> None:
         """
-        Initializes the tape with a list of symbols and places the head at the starting index. The tape_content list
-        must contain only symbols from the machine's alphabet.
+        Initializes the tape with a list of symbols and places the head at the starting index. Ensures that the head
+        position does not exceed the limits of the tape and verifies that the content is valid based on the machine's
+        alphabet.
 
-        :param content: The list of symbols to place in the tape.
-        :type content: list
-        :param location: The current head position
-        :type location: list
+        :param content: The list of symbols to place on the tape. This list must be a nested list structure
+                        matching the dimensions of the tape.
+        :type content: List[Any]
+        :param location: The starting position of the head on the tape. Should be a list with the same
+                         number of dimensions as `self.axes`. Defaults to the origin of the tape.
+        :type location: List[int] | None
         :return: None
-        :rtype: None
-        :raise ReadError: If any symbol in the tape_content is not part of the alphabet.
+        :rtype: None        :raise ReadError: If any symbol in the tape_content is not part of the alphabet.
         """
-        if self.axes == 1:
-            for symbol in content:
-                if symbol not in self.get_terminals():
-                    raise ReadError(self.GRAMMAR, "alphabet", symbol=symbol)
-        else:
-            for content in self.tape:
-                for symbol in content:
-                    if symbol not in self.get_terminals():
-                        raise ReadError(self.GRAMMAR, "alphabet", symbol=symbol)
 
+        def validate_content(list_content):
+            if isinstance(list_content, list):
+                for sub_content in list_content:
+                    validate_content(sub_content)
+            else:
+                if list_content not in self.get_terminals():
+                    raise ReadError(self.GRAMMAR, "alphabet", symbol=content)
+
+        validate_content(content)
         self.tape = content
 
         if location is None:
@@ -503,6 +515,10 @@ class TuringMachine(Automaton):
         :rtype: None
         """
         self.register = register
+        if self.grammar.start is None:
+            self.grammar.start = register
+            if register not in self.get_states():
+                self.add_non_terminals(register)
 
     def set_moves(self, **moves) -> None:
         """
@@ -528,26 +544,27 @@ class TuringMachine(Automaton):
     def write(self, symbol: any) -> None:
         """
         Writes a symbol at the current head position on the multidimensional tape.
-        If the symbol is not already part of the alphabet, it is added automatically.
+        The symbol is written based on the head's position across all dimensions.
+        If the symbol is not part of the alphabet, it is added automatically.
 
-        :param symbol: The symbol to write at the current head position
+        :param symbol: The symbol to write at the current head position.
         :type symbol: any
-        :return: None
-        :rtype: None
         """
-        # Check if the symbol is part of the alphabet, add it if not
+        # Ensure that the symbol is part of the alphabet
         if symbol not in self.grammar.alphabet:
             self.add_terminals(symbol)
 
-        # Ensure the tape is extended to accommodate the current head position
+        # Ensure that the tape is extended to accommodate the current head position.
         self._extend_tape(self.head)
 
-        # Navigate to the correct position on the tape and write the symbol
+        # Navigate to the correct position in the tape using the head's position across all dimensions
         current_cell = self.tape
         for i, index in enumerate(self.head):
             if i == len(self.head) - 1:
+                # In the last dimension, write the symbol
                 current_cell[index] = symbol
             else:
+                # Navigate deeper in the nested structure for higher dimensions
                 current_cell = current_cell[index]
 
     def move(self, direction: str) -> None:
@@ -618,6 +635,10 @@ class TuringMachine(Automaton):
 
         # Add the transition rule to the list of rules (grammar rules).
         transition_rule = (state_from, symbol, state_to, write_symbol, move_direction)
+
+        for state in (state_from, state_to):
+            if state not in self.get_states():
+                self.add_non_terminals(state)
         self.add_rules(transition_rule)  # Adding the rule to the machine's grammar rules.
 
     def step(self):
@@ -631,7 +652,8 @@ class TuringMachine(Automaton):
                 self.write(write_symbol)
                 self.move(move_direction)
                 self.register = state_to
-                self.add_non_terminals(state_to)  # Add the new state to the set of states
+                if state_to not in self.get_states():
+                    self.add_non_terminals(state_to)  # Add the new state to the set of states
                 break  # Exit after finding and executing a valid rule
         else:
             raise Exception(f"No valid transition for state '{self.register}' and symbol '{current_symbol}'.")
@@ -640,100 +662,101 @@ class TuringMachine(Automaton):
 class LinearBoundedAutomaton(TuringMachine):
     """
     Represents a Linear Bounded Automaton (LBA), a type of automaton that simulates
-    a Turing Machine but with a tape limited to the size of the input.
+    a Turing Machine but with a tape limited to the size of the input across multiple dimensions.
     This model can recognize context-sensitive languages (Type 1 in the Chomsky hierarchy).
 
-    LBAs operate on a tape of finite size, which is determined by the size of the input.
-    This makes them more powerful than pushdown automata but less powerful than classical
-    Turing Machines which have an infinite tape.
-
     Attributes:
-        tape (list): The tape (or array) on which the automaton operates. Each cell contains
-                     a symbol from the alphabet. The tape size is bounded by the input size.
-        head (int): The position of the read/write head on the tape. It moves according to the rules.
-        register (str): The current state of the automaton. It is used to determine the next action based
-                        on the current state and the symbol under the head.
-        blank (str): The blank symbol representing an empty or uninitialized tape cell.
-        limit (int): The size of the input, which limits the tape size.
-        validation (dict): A dictionary that contains the accept and reject states of the automaton.
+        tape (list): The multidimensional tape (or array) on which the automaton operates.
+        head (list): The position of the read/write head in the tape for each dimension.
+        register (str): The current state of the automaton.
+        blank (str): The blank symbol representing an empty tape cell.
+        limits (list): The list of size limits for each dimension of the tape.
+        validation (dict): A dictionary containing the accept and reject states.
 
     Methods:
         step(self):
             Executes one step of the automaton based on the current state and the symbol under the head.
-            The automaton transitions to a new state, writes a symbol, and moves the head.
 
         get_rules(self):
-            Returns the list of current rules of the automaton. These rules are associated with the LBA grammar.
+            Returns the list of current rules of the automaton.
 
         extend_tape(self):
-            Dynamically extends the tape but never exceeds the input size.
+            Dynamically extends the tape within the dimensional limits.
 
     """
 
-    def __init__(self, name: str, tape_size: int, blank_symbol: str = "_", movement: dict = {"F": [1], "B": [-1]},
+    def __init__(self, name: str, tape_size: List[int], axes: int = 1, blank_symbol: str = "_", movement: dict = None,
                  register: str = "", accept: str = "OK", reject: str = "nOK"):
         """
-        Initializes the Linear Bounded Automaton with a given name, input size, and blank symbol (defaults to "_").
-        Inherits from the `TuringMachine` class and initializes the tape, head, index, and state.
+        Initializes the Linear Bounded Automaton with a given name, dimensional limits, and blank symbol.
 
         :param name: The name of the automaton.
         :type name: str
-        :param tape_size: The input size (defines the tape limit).
-        :type tape_size: int
+        :param tape_size: A list of size limits for each dimension of the tape.
+        :type tape_size: list
         :param blank_symbol: The blank symbol representing an empty tape cell.
-        :type blank_symbol: str | "_"
+        :type blank_symbol: str
         :param movement: A dictionary of allowed movements.
         :type movement: dict
         :param register: The current state of the automaton.
-        :type register: str | ""
+        :type register: str
         :param accept: The accept state.
-        :type accept: str | "OK"
+        :type accept: str
         :param reject: The reject state.
-        :type reject: str | "nOK"
+        :type reject: str
         """
-        super().__init__(name, axes=1, blank_symbol=blank_symbol, movement=movement, register=register, accept=accept,
-                         reject=reject)
-        self.change_classification("Context-Sensitive")
-        self.limit = tape_size  # Input size, defining the tape size limit.
+        super().__init__(name, axes=axes, blank_symbol=blank_symbol, movement=movement, register=register,
+                         accept=accept,
+                         reject=reject, chomsky="Context-Sensitive")
+        if len(tape_size) == self.axes:
+            self.limits = tape_size  # Input size, defining the tape size limit.
+        else:
+            raise ValueError(f"Invalid tape size {tape_size}. Must be contains {self.axes} values.")
 
     def _extend_tape(self, location: list) -> None:
         """
-        Dynamically extends the tape but stays within the input size limit.
+        Dynamically extends the tape but stays within the limits for each dimension.
 
         :param location: The current position of the head.
         :type location: list
         """
-        if abs(location[0]) >= self.limit:
-            raise IndexError(
-                f"Head position {location[0]} is out of bounds. The tape size is limited to {self.limit}.")
 
-        # Extend the tape, but ensure it doesn't exceed the input size limit
-        while len(self.tape) <= location[0]:
-            self.tape.append(self.blank)
+        for i, pos in enumerate(location):
+            if abs(pos) >= self.limits[i]:
+                raise IndexError(
+                    f"Head position {pos} is out of bounds. The tape size is limited to {self.limits[i]}.")
 
-    def set_tape(self, content: list, location: List[int] = None) -> None:
+            # Extend the tape, but ensure it doesn't exceed the input size limit
+            while len(self.tape) <= pos:
+                self.tape.append(self.blank)
+
+    def set_tape(self, content: List[any], location: List[int] = None) -> None:
         """
-        Initializes the tape with a list of symbols and places the head at the starting index.
-        The tape size will not exceed the input size.
+        Initializes the tape with a multidimensional array of symbols and places the head at the starting position.
+        The tape size will not exceed the defined limits.
 
-        :param content: List of symbols to place on the tape.
+        :param content: Multidimensional list of symbols to place on the tape.
         :type content: list
-        :param location: Starting position of the head.
+        :param location: Starting position of the head in each dimension.
         :type location: list
         """
-        super().set_tape(content, location)
-        if len(content) > self.limit:
-            raise ValueError(f"Input size exceeds the tape limit of {self.limit}.")
+        if any(len(content) > limit for content, limit in zip(content, self.limits)):
+            raise ValueError(f"Input exceeds the tape limits: {self.limits}.")
 
+        super().set_tape(content, location)
         # Ensure the tape is properly extended according to the input size
         self._extend_tape(self.head)
 
     def step(self):
-        """Executes one step of the automaton based on the current state and symbol under the head."""
+        """
+        Executes one step of the automaton based on the current state and the symbol under the head.
+        """
         current_symbol = self.read()
         # Check if the head exceeds the tape boundaries
-        if abs(self.head[0]) >= self.limit:
-            raise IndexError(f"Head position {self.head[0]} exceeds the tape boundary of size {self.limit}.")
+        for i, pos in enumerate(self.head):
+            if abs(pos) >= self.limits[i]:
+                raise IndexError(
+                    f"Head position {pos} in dimension {i} exceeds the tape boundary of size {self.limits[i]}.")
 
         # Apply transition rules
         for rule in self.get_rules():
