@@ -9,7 +9,7 @@ import sys
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'Finite State Machine Tools'
+project = 'Automata Tools'
 copyright = '2024, biface'
 author = 'biface'
 release = '0.0.1'
@@ -31,7 +31,8 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.todo',
     'sphinx_rtd_theme',
-    'sphinx.ext.mathjax'
+    'sphinx.ext.mathjax',
+    'sphinx.ext.graphviz',
 ]
 
 templates_path = ['source/_templates']
@@ -47,6 +48,8 @@ language = 'en'
 
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
+html_logo = '_static/images/logo.svg'
+html_favicon = '_static/images/logo.svg'
 
 mathjax_path = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js'
 mathjax3_config = {'chtml': {'displayAlign': 'left', 'displayIndent': '2em'}}
