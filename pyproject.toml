@@ -1,0 +1,54 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fsm-tools"
+version = "0.0.2"
+authors = [
+    {name = "biface"}
+]
+description = "Formal automata for the Chomsky hierarchy — pure Python."
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "Intended Audience :: Education",
+    "License :: CeCILL-C Free Software License Agreement (CECILL-C)",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage   = "https://fsm-tools.readthedocs.io"
+Repository = "https://github.com/biface/automata"
+Issues     = "https://github.com/biface/automata/issues"
+
+[project.optional-dependencies]
+dev  = ["pytest", "pytest-cov", "mypy", "ruff"]
+test = ["pytest", "pytest-cov"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts   = "--tb=short --strict-markers"
+
+[tool.coverage.run]
+source = ["fsm_tools"]
+branch = true
+
+[tool.coverage.report]
+fail_under   = 80
+show_missing = true
+
+[tool.mypy]
+python_version      = "3.10"
+warn_return_any     = true
+warn_unused_configs = true
+
+[tool.ruff]
+line-length    = 100
+target-version = "py310"

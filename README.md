@@ -1,3 +1,6 @@
+![Python](https://img.shields.io/badge/Language-python-green.svg)
+
+---
 # Lecteur français
 
 Les machines à états finis sont des machines abstraites très utiles pour la modélisation et le contrôle de processus.
