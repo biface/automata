@@ -10,12 +10,19 @@ By implementing this, we can explore how automata relate to formal language theo
 from regular to recursively enumerable. This tool can be expanded for educational purposes or used as a basis for
 building more complex compilers or language processors.
 """
+
 from __future__ import annotations
 
-from typing import List, Any
+from typing import Any, List
 
 from .constants import CHOMSKY_GRAMMARS
-from .exception import ReadError, AddError, RemoveError, ModifyError, RemoveComponentError
+from .exception import (
+    AddError,
+    ModifyError,
+    ReadError,
+    RemoveComponentError,
+    RemoveError,
+)
 
 
 class Grammar:
@@ -54,7 +61,6 @@ class Grammar:
         :rtype: int
         """
         return self.automaton.TYPE
-
 
     def reset_alphabet(self):
         """
@@ -136,7 +142,9 @@ class Automaton:
         else:
             raise KeyError(f"Chomsky hierarchy: key '{classification}' not recognized.")
 
-    def get_terminals(self, ):
+    def get_terminals(
+        self,
+    ):
         """
         Returns the set of terminal symbols (alphabet) used in the grammar.
 
@@ -145,7 +153,7 @@ class Automaton:
         :raise ReadError: If no terminals have been defined in the grammar.
         """
         if len(self.grammar.alphabet) == 0:
-            raise ReadError(self.GRAMMAR, 'alphabet')
+            raise ReadError(self.GRAMMAR, "alphabet")
         else:
             return self.grammar.alphabet
 
@@ -157,7 +165,10 @@ class Automaton:
         :raise AddError: If a symbol is already in the alphabet or states.
         """
         for symbol in terminals:
-            if symbol not in self.grammar.alphabet and symbol not in self.grammar.states:
+            if (
+                symbol not in self.grammar.alphabet
+                and symbol not in self.grammar.states
+            ):
                 self.grammar.alphabet.add(symbol)
             else:
                 raise AddError(self.GRAMMAR, "alphabet", symbol=symbol)
@@ -199,7 +210,7 @@ class Automaton:
         :raise ReadError: If the alphabet is empty when trying to withdraw terminals.
         """
         if len(self.grammar.alphabet) == 0:
-            raise ReadError(self.GRAMMAR, 'alphabet')
+            raise ReadError(self.GRAMMAR, "alphabet")
         else:
             self.grammar.reset_alphabet()
 
@@ -212,7 +223,7 @@ class Automaton:
         :raise ReadError: If no states have been defined in the grammar.
         """
         if len(self.grammar.states) == 0:
-            raise ReadError(self.GRAMMAR, 'states')
+            raise ReadError(self.GRAMMAR, "states")
         else:
             return self.grammar.states
 
@@ -266,7 +277,7 @@ class Automaton:
         :raise ReadError: If the states are empty when trying to withdraw non-terminals.
         """
         if len(self.grammar.states) == 0:
-            raise ReadError(self.GRAMMAR, 'states')
+            raise ReadError(self.GRAMMAR, "states")
         else:
             self.grammar.reset_states()
 
@@ -279,7 +290,7 @@ class Automaton:
         :raise ReadError: If no rules have been defined in the grammar.
         """
         if len(self.grammar.rules) == 0:
-            raise ReadError(self.GRAMMAR, 'rules')
+            raise ReadError(self.GRAMMAR, "rules")
         else:
             return self.grammar.rules
 
@@ -302,7 +313,7 @@ class Automaton:
         """
         for rule in rules:
             if rule not in self.grammar.rules:
-                raise RemoveError(self.GRAMMAR, 'rules', symbol=rule)
+                raise RemoveError(self.GRAMMAR, "rules", symbol=rule)
             else:
                 self.grammar.rules.remove(rule)
 
@@ -313,7 +324,7 @@ class Automaton:
         :raise RemoveComponentError: If the rules are empty when trying to withdraw rules.
         """
         if len(self.grammar.rules) == 0:
-            raise RemoveComponentError(self.GRAMMAR, 'rules')
+            raise RemoveComponentError(self.GRAMMAR, "rules")
         else:
             self.grammar.reset_rules()
 
@@ -408,8 +419,17 @@ class TuringMachine(Automaton):
 
     """
 
-    def __init__(self, name: str, axes: int = 1, blank_symbol: str = "_", movement: dict = None,
-                 register: str = "", accept: str = "OK", reject: str = "nOK", chomsky: str = "Recursively Enumerable"):
+    def __init__(
+        self,
+        name: str,
+        axes: int = 1,
+        blank_symbol: str = "_",
+        movement: dict = None,
+        register: str = "",
+        accept: str = "OK",
+        reject: str = "nOK",
+        chomsky: str = "Recursively Enumerable",
+    ):
         """
         Initializes the Turing Machine with a given name and the blank symbol (defaults to "_").
         Inherits from the base `Automaton` class and initializes the tape, head, index, and
@@ -439,14 +459,14 @@ class TuringMachine(Automaton):
         self.blank = blank_symbol
         self.add_terminals(blank_symbol)
         self.add_non_terminals(register)
-        self.validation = dict([('accept', accept), ('reject', reject)])
+        self.validation = dict([("accept", accept), ("reject", reject)])
         self.add_non_terminals(accept)
         self.add_non_terminals(reject)
 
         if movement is None:
             for i in range(1, axes + 1):
-                self.moves[f'F{i}'] = [1 if j == i - 1 else 0 for j in range(axes)]
-                self.moves[f'B{i}'] = [-1 if j == i - 1 else 0 for j in range(axes)]
+                self.moves[f"F{i}"] = [1 if j == i - 1 else 0 for j in range(axes)]
+                self.moves[f"B{i}"] = [-1 if j == i - 1 else 0 for j in range(axes)]
         else:
             self.moves = movement
 
@@ -577,7 +597,9 @@ class TuringMachine(Automaton):
         :rtype: None
         """
         if direction not in self.moves:
-            raise ValueError(f"Invalid direction '{direction}'. Must be one of {list(self.moves.keys())}.")
+            raise ValueError(
+                f"Invalid direction '{direction}'. Must be one of {list(self.moves.keys())}."
+            )
 
         # Get the movement increments for the given direction
         axis = 0
@@ -588,7 +610,14 @@ class TuringMachine(Automaton):
         else:
             self.head[axis] = self.head[axis] + self.moves[direction]
 
-    def add_transition(self, state_from: str, symbol: any, state_to: str, write_symbol: any, move_direction):
+    def add_transition(
+        self,
+        state_from: str,
+        symbol: any,
+        state_to: str,
+        write_symbol: any,
+        move_direction,
+    ):
         """
         Adds a transition rule to the Turing Machine's transition table. This rule defines
         what the Turing Machine should do when it encounters a specific symbol in a given state.
@@ -627,11 +656,13 @@ class TuringMachine(Automaton):
         """
         # First, ensure the symbol is in the alphabet of the machine.
         if symbol not in self.get_terminals():
-            raise ReadError(self.GRAMMAR, 'alphabet', symbol=symbol)
+            raise ReadError(self.GRAMMAR, "alphabet", symbol=symbol)
 
         # Ensure that the direction is valid (either 'L' or 'R').
         if move_direction not in self.moves:
-            raise ValueError(f"Invalid move direction '{move_direction}'. Must be {self.moves}.")
+            raise ValueError(
+                f"Invalid move direction '{move_direction}'. Must be {self.moves}."
+            )
 
         # Add the transition rule to the list of rules (grammar rules).
         transition_rule = (state_from, symbol, state_to, write_symbol, move_direction)
@@ -639,11 +670,13 @@ class TuringMachine(Automaton):
         for state in (state_from, state_to):
             if state not in self.get_states():
                 self.add_non_terminals(state)
-        self.add_rules(transition_rule)  # Adding the rule to the machine's grammar rules.
+        self.add_rules(
+            transition_rule
+        )  # Adding the rule to the machine's grammar rules.
 
     def step(self):
         """Execute one step of the Turing Machine based on current state and symbol."""
-        current_symbol = (self.read())
+        current_symbol = self.read()
         # Iterate over the transition rules in self.grammar.rules
         for rule in self.grammar.rules:
             state_from, symbol, state_to, write_symbol, move_direction = rule
@@ -653,10 +686,14 @@ class TuringMachine(Automaton):
                 self.move(move_direction)
                 self.register = state_to
                 if state_to not in self.get_states():
-                    self.add_non_terminals(state_to)  # Add the new state to the set of states
+                    self.add_non_terminals(
+                        state_to
+                    )  # Add the new state to the set of states
                 break  # Exit after finding and executing a valid rule
         else:
-            raise Exception(f"No valid transition for state '{self.register}' and symbol '{current_symbol}'.")
+            raise Exception(
+                f"No valid transition for state '{self.register}' and symbol '{current_symbol}'."
+            )
 
 
 class LinearBoundedAutomaton(TuringMachine):
@@ -685,8 +722,17 @@ class LinearBoundedAutomaton(TuringMachine):
 
     """
 
-    def __init__(self, name: str, tape_size: List[int], axes: int = 1, blank_symbol: str = "_", movement: dict = None,
-                 register: str = "", accept: str = "OK", reject: str = "nOK"):
+    def __init__(
+        self,
+        name: str,
+        tape_size: List[int],
+        axes: int = 1,
+        blank_symbol: str = "_",
+        movement: dict = None,
+        register: str = "",
+        accept: str = "OK",
+        reject: str = "nOK",
+    ):
         """
         Initializes the Linear Bounded Automaton with a given name, dimensional limits, and blank symbol.
 
@@ -705,13 +751,22 @@ class LinearBoundedAutomaton(TuringMachine):
         :param reject: The reject state.
         :type reject: str
         """
-        super().__init__(name, axes=axes, blank_symbol=blank_symbol, movement=movement, register=register,
-                         accept=accept,
-                         reject=reject, chomsky="Context-Sensitive")
+        super().__init__(
+            name,
+            axes=axes,
+            blank_symbol=blank_symbol,
+            movement=movement,
+            register=register,
+            accept=accept,
+            reject=reject,
+            chomsky="Context-Sensitive",
+        )
         if len(tape_size) == self.axes:
             self.limits = tape_size  # Input size, defining the tape size limit.
         else:
-            raise ValueError(f"Invalid tape size {tape_size}. Must be contains {self.axes} values.")
+            raise ValueError(
+                f"Invalid tape size {tape_size}. Must be contains {self.axes} values."
+            )
 
     def _extend_tape(self, location: list) -> None:
         """
@@ -724,7 +779,8 @@ class LinearBoundedAutomaton(TuringMachine):
         for i, pos in enumerate(location):
             if abs(pos) >= self.limits[i]:
                 raise IndexError(
-                    f"Head position {pos} is out of bounds. The tape size is limited to {self.limits[i]}.")
+                    f"Head position {pos} is out of bounds. The tape size is limited to {self.limits[i]}."
+                )
 
             # Extend the tape, but ensure it doesn't exceed the input size limit
             while len(self.tape) <= pos:
@@ -756,7 +812,8 @@ class LinearBoundedAutomaton(TuringMachine):
         for i, pos in enumerate(self.head):
             if abs(pos) >= self.limits[i]:
                 raise IndexError(
-                    f"Head position {pos} in dimension {i} exceeds the tape boundary of size {self.limits[i]}.")
+                    f"Head position {pos} in dimension {i} exceeds the tape boundary of size {self.limits[i]}."
+                )
 
         # Apply transition rules
         for rule in self.get_rules():
@@ -766,7 +823,11 @@ class LinearBoundedAutomaton(TuringMachine):
                 self.write(write_symbol)
                 self.move(move_direction)
                 self.register = state_to
-                self.add_non_terminals(state_to)  # Add the new state to the set of states
+                self.add_non_terminals(
+                    state_to
+                )  # Add the new state to the set of states
                 break
         else:
-            raise Exception(f"No valid transition for state '{self.register}' and symbol '{current_symbol}'.")
+            raise Exception(
+                f"No valid transition for state '{self.register}' and symbol '{current_symbol}'."
+            )

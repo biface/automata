@@ -1,10 +1,13 @@
 from typing import Any
+
 from .lightweight import ExtFSM
+
 
 class ContextFSM(ExtFSM):
     """
     This class implements a Finite State Machine to be used in Django contexts. It inherits from ExtFSM class.
     """
+
     def __init__(self, initial_state: Any):
         """
         This initializing method sets an instance ContextFSM and helps a Finite State Machine to be used in a Django
@@ -17,7 +20,6 @@ class ContextFSM(ExtFSM):
         """
         super().__init__(initial_state)
 
-
     def as_dict(self) -> dict:
         """
         This method returns a dictionary representation of the FSM.
@@ -25,9 +27,15 @@ class ContextFSM(ExtFSM):
         :return: A dictionary representation of the FSM.
         :rtype: dict
         """
-        return dict([('current', self.current), ('previous', self.previous), ('transitions', self.transitions)])
+        return dict(
+            [
+                ("current", self.current),
+                ("previous", self.previous),
+                ("transitions", self.transitions),
+            ]
+        )
 
-    def add_to_context(self, context:dict, key:str) -> None:
+    def add_to_context(self, context: dict, key: str) -> None:
         """
         This method adds the given key to the given context from a defined Django's view function.
 

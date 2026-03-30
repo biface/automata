@@ -5,11 +5,11 @@ and automata.
 
 # Chomsky hierarchy levels (Grammar types)
 CHOMSKY_GRAMMARS = {
-        'Regular': 4,
-        'Context-Free': 3,
-        'Context-Sensitive': 2,
-        'Recursively Enumerable': 1
-    }
+    "Regular": 4,
+    "Context-Free": 3,
+    "Context-Sensitive": 2,
+    "Recursively Enumerable": 1,
+}
 """
 CHOMSKY_GRAMMAR is a dictionary that maps the different types of grammars 
 in the Chomsky hierarchy to their corresponding integer values. These integer 
@@ -32,18 +32,18 @@ applications where a numeric representation is required.
 """
 # Components within automata
 COMPONENTS = {
-        'alphabet': 1,
-        'states': 3,
-        'transitions': 2,
-        'stack': 5,
-        'grammar': 4,
-        'validation': 6,
-        'tape': 7,
-        'head': 8,
-        'moves': 9,
-        'register': 10,
-        'blank': 11
-    }
+    "alphabet": 1,
+    "states": 3,
+    "transitions": 2,
+    "stack": 5,
+    "grammar": 4,
+    "validation": 6,
+    "tape": 7,
+    "head": 8,
+    "moves": 9,
+    "register": 10,
+    "blank": 11,
+}
 """
 COMPONENTS is a dictionary that assigns a unique integer value to each key 
 representing a fundamental component in computational models and formal grammar processing. 
@@ -66,16 +66,16 @@ in computational workflows.
 
 # Possible actions on components
 ACTIONS = {
-        'read': 1,
-        'add': 2,
-        'remove': 3,
-        'modify': 4,
-        'validate': 5,
-        'search': 6,
-        'withdraw': 19,
-        'write': 7,
-        'move': 8,
-    }
+    "read": 1,
+    "add": 2,
+    "remove": 3,
+    "modify": 4,
+    "validate": 5,
+    "search": 6,
+    "withdraw": 19,
+    "write": 7,
+    "move": 8,
+}
 """
 ACTIONS is a dictionary that maps common operations or actions to unique integer values, 
 providing a standardized way to reference and process these actions in computational workflows.

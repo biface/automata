@@ -3,7 +3,8 @@ This module provides exception classes for Finite State Machines and Automata.
 """
 
 from typing import List
-from .constants import CHOMSKY_GRAMMARS, COMPONENTS, ACTIONS
+
+from .constants import ACTIONS, CHOMSKY_GRAMMARS, COMPONENTS
 from .utils.json import generate_message, get_message
 
 
@@ -22,15 +23,17 @@ class AutomatonGroup:
 
 class AutomatonException(Exception):
     """
-        Generic exception for errors in formal automata.
-        Computes a unique error code based on the Chomsky grammar hierarchy level,
-        the component, and the action.
+    Generic exception for errors in formal automata.
+    Computes a unique error code based on the Chomsky grammar hierarchy level,
+    the component, and the action.
 
-        Localized error codes are fetched from `errors.mo`.
-        General exception messages are fetched from `exception_msg.mo`.
+    Localized error codes are fetched from `errors.mo`.
+    General exception messages are fetched from `exception_msg.mo`.
     """
 
-    def __init__(self, grammar: str, component: str, action: str, locale: str = None, **event) -> None:
+    def __init__(
+        self, grammar: str, component: str, action: str, locale: str = None, **event
+    ) -> None:
         """
         This class implements the exception basis for formal grammar automata.
 
@@ -62,10 +65,16 @@ class AutomatonException(Exception):
         else:
             self.action = action
 
-        self.value = 1000 * CHOMSKY_GRAMMARS[self.grammar] + 100 * COMPONENTS[self.component] + ACTIONS[self.action]
+        self.value = (
+            1000 * CHOMSKY_GRAMMARS[self.grammar]
+            + 100 * COMPONENTS[self.component]
+            + ACTIONS[self.action]
+        )
         self.locale = locale
         self.domains = ["automata"]
-        self.message = generate_message(self.grammar, self.component, self.action, self.domains[0], self.locale)
+        self.message = generate_message(
+            self.grammar, self.component, self.action, self.domains[0], self.locale
+        )
         self.group = AutomatonGroup()
         super().__init__(self.message)
         self.group.add_exception(self)
@@ -75,10 +84,10 @@ class AutomatonException(Exception):
         self.message = self.generate_message(self.locale)
 
     def generate_message(self, locale: str) -> str:
-        """
-
-        """
-        return generate_message(self.grammar, self.component, self.action, self.domains[0], locale)
+        """ """
+        return generate_message(
+            self.grammar, self.component, self.action, self.domains[0], locale
+        )
 
     def __str__(self):
         return self.message
@@ -86,25 +95,35 @@ class AutomatonException(Exception):
 
 # Specialized exceptions
 
+
 class AutomatonError(AutomatonException):
     event = {}
-    def __init__(self, grammar: str, component: str, action: str, locale: str = None, **event) -> None:
+
+    def __init__(
+        self, grammar: str, component: str, action: str, locale: str = None, **event
+    ) -> None:
         super().__init__(grammar, component, action, locale)
         self.domains.append("errors")
         if event:
-            self.event['format'] = event
+            self.event["format"] = event
         self.message = self.generate_message(self.locale)
 
     def generate_message(self, locale: str) -> str:
         automaton_msg = super().generate_message(locale)
         if len(self.event) > 0:
             try:
-                error_msg = generate_message(self.grammar, self.component, self.action, self.domains[1], self.locale,
-                                             **self.event['format'])
+                error_msg = generate_message(
+                    self.grammar,
+                    self.component,
+                    self.action,
+                    self.domains[1],
+                    self.locale,
+                    **self.event["format"],
+                )
                 for exc in self.group.exceptions:
-                    if type(exc) is self.event['cls']:
+                    if type(exc) is self.event["cls"]:
                         self.group.exceptions.remove(exc)
-                self.group.add_exception(self.event['cls'](error_msg))
+                self.group.add_exception(self.event["cls"](error_msg))
                 automaton_msg += "\n" + error_msg
             except KeyError as e:
                 raise e
@@ -116,9 +135,8 @@ class ReadError(AutomatonError):
 
     def __init__(self, grammar_level, component, locale=None, **event):
         if event:
-            self.event['cls'] = AttributeError
-        super().__init__(grammar_level, component, 'read', locale, **event)
-
+            self.event["cls"] = AttributeError
+        super().__init__(grammar_level, component, "read", locale, **event)
 
 
 class AddError(AutomatonError):
@@ -126,8 +144,8 @@ class AddError(AutomatonError):
 
     def __init__(self, grammar_level, component, locale=None, **event):
         if event:
-            self.event['cls'] = ValueError
-        super().__init__(grammar_level, component, 'add', locale, **event)
+            self.event["cls"] = ValueError
+        super().__init__(grammar_level, component, "add", locale, **event)
 
 
 class RemoveError(AutomatonError):
@@ -135,8 +153,8 @@ class RemoveError(AutomatonError):
 
     def __init__(self, grammar_level, component, locale=None, **event):
         if event:
-            self.event['cls'] = KeyError
-        super().__init__(grammar_level, component, 'remove', locale, **event)
+            self.event["cls"] = KeyError
+        super().__init__(grammar_level, component, "remove", locale, **event)
 
 
 class ModifyError(AutomatonError):
@@ -144,8 +162,8 @@ class ModifyError(AutomatonError):
 
     def __init__(self, grammar_level, component, locale=None, **event):
         if event:
-            self.event['cls'] = ValueError
-        super().__init__(grammar_level, component, 'modify', locale, **event)
+            self.event["cls"] = ValueError
+        super().__init__(grammar_level, component, "modify", locale, **event)
 
 
 class ValidationError(AutomatonError):
@@ -153,8 +171,8 @@ class ValidationError(AutomatonError):
 
     def __init__(self, grammar_level, component, locale=None, **event):
         if event:
-            self.event['cls'] = AssertionError
-        super().__init__(grammar_level, component, 'validate', locale, **event)
+            self.event["cls"] = AssertionError
+        super().__init__(grammar_level, component, "validate", locale, **event)
 
 
 class SearchError(AutomatonError):
@@ -162,8 +180,8 @@ class SearchError(AutomatonError):
 
     def __init__(self, grammar_level, component, locale=None, **event):
         if event:
-            self.event['cls'] = KeyError
-        super().__init__(grammar_level, component, 'search', locale, **event)
+            self.event["cls"] = KeyError
+        super().__init__(grammar_level, component, "search", locale, **event)
 
 
 class RemoveComponentError(AutomatonError):
@@ -171,5 +189,5 @@ class RemoveComponentError(AutomatonError):
 
     def __init__(self, grammar_level, component, locale=None, **event):
         if event:
-            self.event['cls'] = RuntimeError
-        super().__init__(grammar_level, component, 'withdraw', locale, **event)
+            self.event["cls"] = RuntimeError
+        super().__init__(grammar_level, component, "withdraw", locale, **event)

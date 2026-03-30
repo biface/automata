@@ -39,8 +39,10 @@ Use Cases:
 
 """
 
-from .exception import AddError, ReadError
 from typing import Any
+
+from .exception import AddError, ReadError
+
 
 class FSM:
     """

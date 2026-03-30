@@ -1,8 +1,9 @@
-import os
-import locale
 import json
-from typing import Union, Dict, Any
+import locale
+import os
 from pathlib import Path
+from typing import Any, Dict, Union
+
 from .common import generate_code
 
 path = Path(os.path.dirname(__file__))
@@ -51,7 +52,9 @@ def seek_message(msg_id: str, domain: str, lang: str = None) -> str:
         lang = "en-US"
 
     if msg_id not in messages[lang]:
-        raise KeyError(f"The message with ID '{msg_id}' was not found for language '{lang}'.")
+        raise KeyError(
+            f"The message with ID '{msg_id}' was not found for language '{lang}'."
+        )
 
     return messages[lang][msg_id]
 
@@ -69,7 +72,9 @@ def format_message(template: str, **kwargs) -> str:
     try:
         return template.format(**kwargs)
     except KeyError as e:
-        raise ValueError(f"The parameter '{e.args[0]}' is missing for formatting the message.")
+        raise ValueError(
+            f"The parameter '{e.args[0]}' is missing for formatting the message."
+        )
 
 
 def get_message(msg_id: str, domain: str, lang: str = None, **kwargs) -> str:
@@ -90,10 +95,10 @@ def get_message(msg_id: str, domain: str, lang: str = None, **kwargs) -> str:
     return format_message(raw_message, **kwargs)
 
 
-def generate_message(grammar: str, component: str, action: str, domain: str, lang: str = None, **kwargs) -> str:
-    """
-
-    """
+def generate_message(
+    grammar: str, component: str, action: str, domain: str, lang: str = None, **kwargs
+) -> str:
+    """ """
     msg_id = generate_code(grammar, component, action)
     raw_msg = seek_message(msg_id, domain, lang)
     return format_message(raw_msg, **kwargs)
@@ -150,6 +155,7 @@ def json_to_po(json_domain: Union[Dict[str, any], str], output_dir: str, **kwarg
         languages (``list``) : A list of target languages to handle the completeness of extensions for certain languages.
         authors (``list``) : A list of authors.
     """
+
     def check_lang_cardinality(cardinality, lang) -> bool:
         lang_cardinality = len(set(json_data[lang].keys()))
         return lang_cardinality == cardinality
@@ -180,7 +186,11 @@ def json_to_po(json_domain: Union[Dict[str, any], str], output_dir: str, **kwarg
         print("Checking with source language...")
         keys_card = len(set(json_data[source].keys()))
         for key, lang in json_data.items():
-            print("Checking language '{lang}' with source '{source}'...".format(lang=key, source=source))
+            print(
+                "Checking language '{lang}' with source '{source}'...".format(
+                    lang=key, source=source
+                )
+            )
             if check_lang_cardinality(keys_card, key):
                 print("Check is True.")
             else:
@@ -192,5 +202,7 @@ def json_to_po(json_domain: Union[Dict[str, any], str], output_dir: str, **kwarg
                     print("Set difference is '{set}".format(set=mkeys))
                     for mkey in mkeys:
                         json_data[key][mkey] = json_data[language][mkey]
-            print("Number of keys is {keys}".format(keys=len(set(json_data[key].keys()))))
+            print(
+                "Number of keys is {keys}".format(keys=len(set(json_data[key].keys())))
+            )
             print("Set difference is : {set}".format(set=check_lang_keys(source, key)))
