@@ -9,11 +9,6 @@ def automaton_instance():
     """Fixture to create an Automaton instance."""
     return Automaton(name="TestAutomaton", chomsky="Regular")
 
-@pytest.fixture
-def empty_automaton():
-    """Fixture for an Automaton without grammar type."""
-    return Automaton(name="EmptyAutomaton")
-
 def test_initialization(automaton_instance):
     """Test initialization of Automaton."""
     assert automaton_instance.name == "TestAutomaton"
@@ -25,6 +20,11 @@ def test_invalid_chomsky_type():
     """Test exception raised for invalid Chomsky grammar type."""
     with pytest.raises(KeyError):
         Automaton(name="InvalidAutomaton", chomsky="InvalidType")
+
+def test_automaton_requires_chomsky():
+    """Chomsky classification is mandatory for all Chomsky-hierarchy automata."""
+    with pytest.raises(TypeError):
+        Automaton(name="NoChomsky")
 
 def test_get_terminals(automaton_instance):
     """Test retrieving terminal symbols."""

@@ -10,7 +10,7 @@ class MockAutomaton(Automaton):
 @pytest.fixture
 def grammar_instance():
     """Fixture to create a default Grammar instance."""
-    return Grammar(automaton=MockAutomaton("Test Grammar", 'Context-Sensitive'))
+    return Grammar(automaton=MockAutomaton("Test Grammar", chomsky='Context-Sensitive'))
 
 
 def test_initialization(grammar_instance):
