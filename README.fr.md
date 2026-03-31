@@ -3,29 +3,29 @@
 [![codecov](https://codecov.io/gh/biface/automata/branch/master/graph/badge.svg)](https://codecov.io/gh/biface/automata)
 [![PyPI](https://img.shields.io/pypi/v/fsm-tools.svg)](https://pypi.org/project/fsm-tools/)
 
-*[Lire en français](README.fr.md)*
+*[Read in English](README.md)*
 
 ---
 
 # fsm-tools
 
-A formal Python library for modelling automata in the Chomsky hierarchy.
+Une bibliothèque Python formelle pour la modélisation des automates de la hiérarchie de Chomsky.
 
-## Overview
+## Vue d'ensemble
 
-**fsm-tools** provides a rigorous implementation of the four automaton families
-defined by Chomsky's grammar and language hierarchy:
+**fsm-tools** fournit une implémentation rigoureuse des quatre familles d'automates
+définies par la hiérarchie des grammaires et des langages de Chomsky :
 
-| Type | Automaton | Language family |
-|------|-----------|-----------------|
-| 0 | `TuringMachine` | Recursively enumerable |
-| 1 | `LinearBoundedAutomaton` | Context-sensitive |
-| 2 | `PushdownAutomaton` | Context-free |
-| 3 | `FiniteStateAutomaton` | Regular |
+| Type | Automate | Famille de langages |
+|------|----------|---------------------|
+| 0 | `TuringMachine` | Récursivement énumérables |
+| 1 | `LinearBoundedAutomaton` | Contextuels |
+| 2 | `PushdownAutomaton` | Hors-contexte |
+| 3 | `FiniteStateAutomaton` | Rationnels |
 
-Each class is a formal restriction of the one above it — inheriting its structure
-and constraining it further. The hierarchy is implemented as a strict inheritance
-chain:
+Chaque classe est une restriction formelle de celle qui la précède — elle hérite de
+sa structure et la contraint davantage. La hiérarchie est implémentée comme une chaîne
+d'héritage stricte :
 
 ```
 Automaton
@@ -41,13 +41,13 @@ Automaton
 pip install fsm-tools
 ```
 
-## Quick start
+## Démarrage rapide
 
 ```python
 from fsm_tools import TuringMachine
 
 tm = TuringMachine(
-    name="BinaryIncrement",
+    name="IncrementBinaire",
     chomsky="Recursively Enumerable",
     axes=1,
     blank_symbol="_",
@@ -60,19 +60,19 @@ tm = TuringMachine(
 
 ## Documentation
 
-Full documentation is available at
+La documentation complète est disponible sur
 [fsm-tools.readthedocs.io](https://fsm-tools.readthedocs.io).
 
-## Links
+## Liens
 
 - [PyPI](https://pypi.org/project/fsm-tools/)
 - [GitHub](https://github.com/biface/automata)
 - [Issues](https://github.com/biface/automata/issues)
-- [Contributing](CONTRIBUTING.md)
+- [Contribuer](CONTRIBUTING.fr.md)
 - [Changelog](CHANGELOG.md)
 
-## License
+## Licence
 
-This project is licensed under the
-[CeCILL-C](http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html) license.
-The French version is the legally authoritative reference — see [LICENSE.fr](LICENSE.fr).
+Ce projet est distribué sous la licence
+[CeCILL-C](http://www.cecill.info/licences/Licence_CeCILL-C_V1-fr.html).
+La version française est la référence juridiquement opposable — voir [LICENSE.fr](LICENSE.fr).
