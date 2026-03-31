@@ -117,18 +117,18 @@ class Automaton:
     GRAMMAR: str = ""
     TYPE: int = 99
 
-    def __init__(self, name: str = "", chomsky: str = None):
+    def __init__(self, name: str = "", *, chomsky: str):
         """
         Initializes the Automaton with a given name and a given Grammar classification name.
 
         :param name: The name of the automaton, which can be used to identify the automaton.
         :type name: str
         :param chomsky: The Chomsky grammar classification type to be used, which defines the automaton's behavior.
-        :type chomsky: str | None
+        :type chomsky: str
         :raise KeyError: If the given Chomsky grammar type is not recognized.
         """
         self.name = name
-        if chomsky is not None and chomsky in CHOMSKY_GRAMMARS.keys():
+        if chomsky in CHOMSKY_GRAMMARS.keys():
             self.GRAMMAR = chomsky
             self.TYPE = CHOMSKY_GRAMMARS[chomsky] - 1
         else:
@@ -450,7 +450,7 @@ class TuringMachine(Automaton):
         :param reject: The reject state to be initialized.
         :type reject: str | "nOK"
         """
-        super().__init__(name, chomsky)
+        super().__init__(name, chomsky=chomsky)
         self.axes = axes
         self.tape = []
         self.head = [0] * axes
