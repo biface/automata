@@ -29,7 +29,7 @@ Repository = "https://github.com/biface/automata"
 Issues     = "https://github.com/biface/automata/issues"
 
 [project.optional-dependencies]
-dev  = ["pytest", "pytest-cov", "mypy", "ruff"]
+dev  = ["pytest", "pytest-cov", "mypy", "ruff", "tox", "tox-uv"]
 test = ["pytest", "pytest-cov"]
 
 [tool.pytest.ini_options]
@@ -37,7 +37,7 @@ testpaths = ["tests"]
 addopts   = "--tb=short --strict-markers"
 
 [tool.coverage.run]
-source = ["fsm_tools"]
+source_pkgs = ["fsm_tools"]
 branch = true
 
 [tool.coverage.report]
