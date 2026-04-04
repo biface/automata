@@ -1,0 +1,35 @@
+name: Python CI - Quality
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: ['master']
+
+jobs:
+  quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install tox and tox-uv
+        run: uv pip install --system tox tox-uv
+
+      - name: Run quality checks
+        run: tox -e ci-quality
+
+      - name: Upload quality report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-report
+          path: .tox/ci-quality/log/
+          retention-days: 30
