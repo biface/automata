@@ -1,8 +1,7 @@
 import pytest
 
-from fsm_tools.constants import CHOMSKY_GRAMMARS
 from fsm_tools.advanced import Grammar, Automaton
-from fsm_tools.exception import ReadError, AddError, RemoveError, ModifyError, RemoveComponentError
+from fsm_tools.exception import ReadError, AddError, RemoveError, ModifyError
 
 @pytest.fixture
 def automaton_instance():

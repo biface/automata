@@ -1,6 +1,5 @@
 import pytest
 from fsm_tools.advanced import Grammar, Automaton
-from fsm_tools.exception import ReadError, AddError, RemoveError, ModifyError, RemoveComponentError
 
 
 class MockAutomaton(Automaton):
