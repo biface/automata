@@ -11,7 +11,7 @@ jobs:
     name: Push mirror
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0   # full history required
 
@@ -22,6 +22,9 @@ jobs:
 
           # --mirror also pushes refs/remotes/* which GitLab rejects.
           # Push branches and tags explicitly instead.
+          # Use refs/remotes/origin/* as source — GitHub Actions checkout only
+          # creates local refs/heads/ for the current branch. All other branches
+          # are only available as remote tracking refs.
           git push gitlab \
             --prune \
             "+refs/remotes/origin/*:refs/heads/*" \

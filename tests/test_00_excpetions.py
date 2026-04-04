@@ -74,7 +74,7 @@ def test_specialized_exceptions(exception_cls, action, valid_inputs):
     (ValidationError, "Regular", "validation", "validate"),
     (SearchError, "Context-Free", "validation", "search"),
 ])
-def test_specialized_exceptions(exception_cls, grammar, component, action):
+def test_specialized_exceptions_with_full_parameters(exception_cls, grammar, component, action):
     exc = exception_cls(
         grammar_level=grammar,
         component=component,

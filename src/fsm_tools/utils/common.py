@@ -16,11 +16,11 @@ def generate_code(grammar: str, component: str, action: str) -> str:
     :return: str
     :raise ValueError: If keys are not defined in grammar, component, action dictionaries
     """
-    if not grammar in CHOMSKY_GRAMMARS.keys():
+    if grammar not in CHOMSKY_GRAMMARS.keys():
         raise KeyError("Unknown grammar name")
-    if not component in COMPONENTS.keys():
+    if component not in COMPONENTS.keys():
         raise KeyError("Unknown component name")
-    if not action in ACTIONS.keys():
+    if action not in ACTIONS.keys():
         raise KeyError("Unknown action name")
 
     return str(

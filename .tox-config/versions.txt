@@ -1,0 +1,21 @@
+# Configuration des versions Python pour les tests
+# ================================================
+#
+# Ce fichier définit les versions Python à tester séquentiellement.
+#
+# Format :
+# - Une version par ligne (ex: py310, py311, py312)
+# - Les lignes vides et commençant par # sont ignorées
+#
+# Modification :
+# Pour ajouter/retirer des versions, éditez simplement ce fichier.
+# Pas besoin de modifier tox.ini.
+#
+# ================================================
+
+# Versions Python à tester (ordre d'exécution)
+py310
+py311
+py312
+py313
+py314

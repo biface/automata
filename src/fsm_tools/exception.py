@@ -5,7 +5,7 @@ This module provides exception classes for Finite State Machines and Automata.
 from typing import List
 
 from .constants import ACTIONS, CHOMSKY_GRAMMARS, COMPONENTS
-from .utils.json import generate_message, get_message
+from .utils.json import generate_message
 
 
 class AutomatonGroup:
@@ -50,17 +50,17 @@ class AutomatonException(Exception):
         :raises: ValueError.
         """
 
-        if not grammar in CHOMSKY_GRAMMARS.keys():
+        if grammar not in CHOMSKY_GRAMMARS.keys():
             raise ValueError("Unknown grammar hierarchy name.")
         else:
             self.grammar = grammar
 
-        if not component in COMPONENTS.keys():
+        if component not in COMPONENTS.keys():
             raise ValueError("Unknown component name.")
         else:
             self.component = component
 
-        if not action in ACTIONS.keys():
+        if action not in ACTIONS.keys():
             raise ValueError("Unknown action name.")
         else:
             self.action = action

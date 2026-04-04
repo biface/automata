@@ -2,7 +2,7 @@ import json
 import locale
 import os
 from pathlib import Path
-from typing import Any, Dict, Union
+from typing import Dict, Union
 
 from .common import generate_code
 
@@ -167,13 +167,14 @@ def json_to_po(json_domain: Union[Dict[str, any], str], output_dir: str, **kwarg
 
     source = ""
     languages = []
-    authors = []
+    # authors = []
     json_data = {}
     if kwargs:
         try:
             source = kwargs.pop("source")
             languages = kwargs.pop("languages")
-            authors = kwargs.pop("authors")
+            # authors = kwargs.pop("authors")
+            kwargs.pop("authors")
         except KeyError:
             pass
     if isinstance(json_domain, dict):
