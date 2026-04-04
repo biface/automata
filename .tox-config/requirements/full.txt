@@ -1,0 +1,6 @@
+mypy
+ruff
+pytest
+pytest-cov
+tox
+tox-uv
