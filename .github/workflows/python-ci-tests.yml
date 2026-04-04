@@ -33,7 +33,7 @@ jobs:
         run: uv python install ${{ matrix.python-version }}
 
       - name: Install tox and tox-uv
-        run: uv pip install --system tox tox-uv
+        run: uv tool install tox --with tox-uv
 
       - name: Run tests
         run: tox -e ci-tests

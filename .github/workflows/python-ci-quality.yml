@@ -21,7 +21,7 @@ jobs:
         run: uv python install 3.12
 
       - name: Install tox and tox-uv
-        run: uv pip install --system tox tox-uv
+        run: uv tool install tox --with tox-uv
 
       - name: Run quality checks
         run: tox -e ci-quality
