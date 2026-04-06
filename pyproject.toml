@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "fsm-tools"
 version = "0.0.2"
 authors = [
-    {name = "biface"}
+    {name = "biface", email = "fek2qe8i3@mozmail.com"}
 ]
 description = "Formal automata for the Chomsky hierarchy — pure Python."
 readme = "README.md"
