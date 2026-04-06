@@ -1,5 +1,5 @@
 ![Python](https://img.shields.io/badge/Language-Python-green.svg)
-![CI](https://github.com/biface/automata/actions/workflows/test.yml/badge.svg)
+![CI](https://github.com/biface/automata/actions/workflows/python-ci-tests.yml/badge.svg)
 [![codecov](https://codecov.io/gh/biface/automata/branch/master/graph/badge.svg)](https://codecov.io/gh/biface/automata)
 [![PyPI](https://img.shields.io/pypi/v/fsm-tools.svg)](https://pypi.org/project/fsm-tools/)
 
