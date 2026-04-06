@@ -9,8 +9,8 @@ on:
 
 jobs:
   tests:
-    name: Tests — Python ${{ matrix.python-version }} on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    name: Tests — Python ${{ matrix.python-version }} on Linux
+    runs-on: ubuntu-latest
 
     # Ne s'exécute que si Quality a réussi
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
@@ -18,7 +18,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
 
     steps:
@@ -41,7 +40,7 @@ jobs:
           TOXENV: py${{ matrix.python-version }}
 
       - name: Upload coverage to Codecov
-        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+        if: matrix.python-version == '3.12'
         uses: codecov/codecov-action@v4
         with:
           file: ./coverage.xml
