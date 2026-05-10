@@ -849,16 +849,15 @@ class LinearBoundedAutomaton(TuringMachine):
                 )
 
         # Apply transition rules
-        for rule in self.get_rules():
+        for rule in self.grammar.rules:
             state_from, symbol, state_to, write_symbol, move_direction = rule
             if self.register == state_from and current_symbol == symbol:
                 # Perform the transition: write, move, and change state
                 self.write(write_symbol)
                 self.move(move_direction)
                 self.register = state_to
-                self.add_non_terminals(
-                    state_to
-                )  # Add the new state to the set of states
+                if state_to not in self.get_states():
+                    self.add_non_terminals(state_to)
                 break
         else:
             raise Exception(

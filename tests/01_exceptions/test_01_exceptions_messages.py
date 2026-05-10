@@ -329,46 +329,46 @@ class TestAutomatonGroup:
 
 class TestSpecialisedExceptions:
 
-    @pytest.mark.parametrize("cls, component, action", [
-        (ReadError,            "alphabet",   "read"),
-        (AddError,             "alphabet",   "add"),
-        (RemoveError,          "alphabet",   "remove"),
-        (ModifyError,          "alphabet",   "modify"),
-        (ValidationError,      "validation", "validate"),
-        (SearchError,          "validation", "search"),
-        (RemoveComponentError, "stack",      "withdraw"),
+    @pytest.mark.parametrize("cls, component, action, event", [
+        (ReadError,            "alphabet",   "read",     {}),
+        (AddError,             "alphabet",   "add",      {"symbol": "x"}),
+        (RemoveError,          "alphabet",   "remove",   {"symbol": "x"}),
+        (ModifyError,          "alphabet",   "modify",   {"symbol": "x"}),
+        (ValidationError,      "validation", "validate", {"reason": "test"}),
+        (SearchError,          "validation", "search",   {"reason": "test"}),
+        (RemoveComponentError, "stack",      "withdraw", {}),
     ])
-    def test_action_attribute(self, cls, component, action):
+    def test_action_attribute(self, cls, component, action, event):
         grammar = "Context-Free" if cls is RemoveComponentError else "Regular"
-        exc = cls(grammar, component)
+        exc = cls(grammar, component, **event)
         assert exc.action == action
 
-    @pytest.mark.parametrize("cls, component", [
-        (ReadError,            "alphabet"),
-        (AddError,             "alphabet"),
-        (RemoveError,          "alphabet"),
-        (ModifyError,          "alphabet"),
-        (ValidationError,      "validation"),
-        (SearchError,          "validation"),
-        (RemoveComponentError, "stack"),
+    @pytest.mark.parametrize("cls, component, event", [
+        (ReadError,            "alphabet",   {}),
+        (AddError,             "alphabet",   {"symbol": "x"}),
+        (RemoveError,          "alphabet",   {"symbol": "x"}),
+        (ModifyError,          "alphabet",   {"symbol": "x"}),
+        (ValidationError,      "validation", {"reason": "test"}),
+        (SearchError,          "validation", {"reason": "test"}),
+        (RemoveComponentError, "stack",      {}),
     ])
-    def test_is_automaton_error(self, cls, component):
+    def test_is_automaton_error(self, cls, component, event):
         grammar = "Context-Free" if cls is RemoveComponentError else "Regular"
-        exc = cls(grammar, component)
+        exc = cls(grammar, component, **event)
         assert isinstance(exc, AutomatonError)
         assert isinstance(exc, AutomatonException)
 
-    @pytest.mark.parametrize("cls, grammar, component", [
-        (ReadError,            "Recursively Enumerable", "alphabet"),
-        (AddError,             "Context-Free",           "stack"),
-        (RemoveError,          "Context-Sensitive",      "states"),
-        (ModifyError,          "Regular",                "transitions"),
-        (ValidationError,      "Regular",                "validation"),
-        (SearchError,          "Context-Free",           "validation"),
-        (RemoveComponentError, "Context-Free",           "stack"),
+    @pytest.mark.parametrize("cls, grammar, component, event", [
+        (ReadError,            "Recursively Enumerable", "alphabet",    {}),
+        (AddError,             "Context-Free",           "stack",       {"symbol": "x"}),
+        (RemoveError,          "Context-Sensitive",      "states",      {"symbol": "x"}),
+        (ModifyError,          "Regular",                "transitions", {"transition": "q0"}),
+        (ValidationError,      "Regular",                "validation",  {"reason": "test"}),
+        (SearchError,          "Context-Free",           "validation",  {"reason": "test"}),
+        (RemoveComponentError, "Context-Free",           "stack",       {}),
     ])
-    def test_grammar_and_component(self, cls, grammar, component):
-        exc = cls(grammar, component)
+    def test_grammar_and_component(self, cls, grammar, component, event):
+        exc = cls(grammar, component, **event)
         assert exc.grammar == grammar
         assert exc.component == component
 

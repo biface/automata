@@ -70,15 +70,16 @@ def test_specialized_exceptions(exception_cls, action, valid_inputs):
 
 # Test : Specific actions
 
-@pytest.mark.parametrize("exception_cls, grammar, component, action", [
-    (ValidationError, "Regular", "validation", "validate"),
-    (SearchError, "Context-Free", "validation", "search"),
+@pytest.mark.parametrize("exception_cls, grammar, component, action, event", [
+    (ValidationError, "Regular", "validation", "validate", {"reason": "test"}),
+    (SearchError, "Context-Free", "validation", "search", {"reason": "test"}),
 ])
-def test_specialized_exceptions_with_full_parameters(exception_cls, grammar, component, action):
+def test_specialized_exceptions_with_full_parameters(exception_cls, grammar, component, action, event):
     exc = exception_cls(
         grammar_level=grammar,
         component=component,
-        locale="en-US"
+        locale="en-US",
+        **event
     )
     assert exc.message is not None
     assert exc.action == action
