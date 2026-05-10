@@ -821,16 +821,19 @@ class LinearBoundedAutomaton(TuringMachine):
         Initializes the tape with a multidimensional array of symbols and places the head at the starting position.
         The tape size will not exceed the defined limits.
 
-        :param content: Multidimensional list of symbols to place on the tape.
+        :param content: List of symbols to place on the tape.
         :type content: list
-        :param location: Starting position of the head in each dimension.
+        :param location: Starting position of the head.
         :type location: list
+        :raises ValueError: If the content length exceeds the tape limit.
         """
-        if any(len(content) > limit for content, limit in zip(content, self.limits)):
-            raise ValueError(f"Input exceeds the tape limits: {self.limits}.")
+        if len(content) > self.limits[0]:
+            raise ValueError(
+                f"Input length {len(content)} exceeds the tape limit "
+                f"of {self.limits[0]}."
+            )
 
         super().set_tape(content, location)
-        # Ensure the tape is properly extended according to the input size
         self._extend_tape(self.head)
 
     def step(self):
