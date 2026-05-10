@@ -451,6 +451,7 @@ class TuringMachine(Automaton):
         :type reject: str | "nOK"
         """
         super().__init__(name, chomsky=chomsky)
+        self._validate_axes(axes)
         self.axes = axes
         self.tape = []
         self.head = [0] * axes
@@ -482,15 +483,44 @@ class TuringMachine(Automaton):
 
         return create_nested_list(self.axes)
 
+    def _validate_axes(self, axes: int) -> None:
+        """
+        Validates that the number of axes is exactly 1.
+
+        Standard Turing Machines operate on a single 1D tape.
+        Use ``ExtendedTuringMachine`` for n-dimensional tapes.
+
+        :param axes: Number of tape dimensions.
+        :type axes: int
+        :raises ValueError: If ``axes`` is not equal to 1.
+        """
+        if axes != 1:
+            raise ValueError(
+                f"TuringMachine only supports a 1D tape (axes=1). "
+                f"Got axes={axes}. Use ExtendedTuringMachine for n-dimensional tapes."
+            )
+
     def _extend_tape(self, location: list) -> None:
         """
-        Extends the tape dynamically to accommodate the current head position.
+        Extends the 1D tape to the right to accommodate the current head position.
 
-        :param location: The current head position
+        The standard Turing Machine tape is right-infinite: it starts at position 0
+        and extends toward positive infinity. Negative positions are not supported —
+        attempting to read or write at a negative position raises ``IndexError``.
+
+        :param location: Current head position as a one-element list.
         :type location: list
-        :return: None
-        :rtype: None
+        :raises IndexError: If the head position is negative.
         """
+        pos = location[0]
+        if pos < 0:
+            raise IndexError(
+                f"Head position {pos} is out of bounds: "
+                f"the standard TuringMachine tape starts at position 0. "
+                f"Use ExtendedTuringMachine for bidirectional tapes."
+            )
+        while len(self.tape) <= pos:
+            self.tape.append(self.blank)
 
     def set_tape(self, content: List[Any], location: List[int] = None) -> None:
         """
@@ -791,16 +821,19 @@ class LinearBoundedAutomaton(TuringMachine):
         Initializes the tape with a multidimensional array of symbols and places the head at the starting position.
         The tape size will not exceed the defined limits.
 
-        :param content: Multidimensional list of symbols to place on the tape.
+        :param content: List of symbols to place on the tape.
         :type content: list
-        :param location: Starting position of the head in each dimension.
+        :param location: Starting position of the head.
         :type location: list
+        :raises ValueError: If the content length exceeds the tape limit.
         """
-        if any(len(content) > limit for content, limit in zip(content, self.limits)):
-            raise ValueError(f"Input exceeds the tape limits: {self.limits}.")
+        if len(content) > self.limits[0]:
+            raise ValueError(
+                f"Input length {len(content)} exceeds the tape limit "
+                f"of {self.limits[0]}."
+            )
 
         super().set_tape(content, location)
-        # Ensure the tape is properly extended according to the input size
         self._extend_tape(self.head)
 
     def step(self):
@@ -816,16 +849,15 @@ class LinearBoundedAutomaton(TuringMachine):
                 )
 
         # Apply transition rules
-        for rule in self.get_rules():
+        for rule in self.grammar.rules:
             state_from, symbol, state_to, write_symbol, move_direction = rule
             if self.register == state_from and current_symbol == symbol:
                 # Perform the transition: write, move, and change state
                 self.write(write_symbol)
                 self.move(move_direction)
                 self.register = state_to
-                self.add_non_terminals(
-                    state_to
-                )  # Add the new state to the set of states
+                if state_to not in self.get_states():
+                    self.add_non_terminals(state_to)
                 break
         else:
             raise Exception(
