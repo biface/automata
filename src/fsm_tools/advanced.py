@@ -451,6 +451,7 @@ class TuringMachine(Automaton):
         :type reject: str | "nOK"
         """
         super().__init__(name, chomsky=chomsky)
+        self._validate_axes(axes)
         self.axes = axes
         self.tape = []
         self.head = [0] * axes
@@ -482,15 +483,44 @@ class TuringMachine(Automaton):
 
         return create_nested_list(self.axes)
 
+    def _validate_axes(self, axes: int) -> None:
+        """
+        Validates that the number of axes is exactly 1.
+
+        Standard Turing Machines operate on a single 1D tape.
+        Use ``ExtendedTuringMachine`` for n-dimensional tapes.
+
+        :param axes: Number of tape dimensions.
+        :type axes: int
+        :raises ValueError: If ``axes`` is not equal to 1.
+        """
+        if axes != 1:
+            raise ValueError(
+                f"TuringMachine only supports a 1D tape (axes=1). "
+                f"Got axes={axes}. Use ExtendedTuringMachine for n-dimensional tapes."
+            )
+
     def _extend_tape(self, location: list) -> None:
         """
-        Extends the tape dynamically to accommodate the current head position.
+        Extends the 1D tape to the right to accommodate the current head position.
 
-        :param location: The current head position
+        The standard Turing Machine tape is right-infinite: it starts at position 0
+        and extends toward positive infinity. Negative positions are not supported —
+        attempting to read or write at a negative position raises ``IndexError``.
+
+        :param location: Current head position as a one-element list.
         :type location: list
-        :return: None
-        :rtype: None
+        :raises IndexError: If the head position is negative.
         """
+        pos = location[0]
+        if pos < 0:
+            raise IndexError(
+                f"Head position {pos} is out of bounds: "
+                f"the standard TuringMachine tape starts at position 0. "
+                f"Use ExtendedTuringMachine for bidirectional tapes."
+            )
+        while len(self.tape) <= pos:
+            self.tape.append(self.blank)
 
     def set_tape(self, content: List[Any], location: List[int] = None) -> None:
         """
