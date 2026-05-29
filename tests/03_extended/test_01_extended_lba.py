@@ -44,8 +44,7 @@ class TestSetTape:
 
     def test_content_at_exact_limit(self, fsm_module):
         elba = fsm_module.ExtendedLBA(
-            "E", tape_size=[3], axes=1,
-            movement={"F": [1], "B": [-1]}, register="S"
+            "E", tape_size=[3], axes=1, movement={"F": [1], "B": [-1]}, register="S"
         )
         elba.add_terminals("a")
         elba.set_tape(["a", "a", "a"])
@@ -53,8 +52,7 @@ class TestSetTape:
 
     def test_content_exceeds_limit_raises_value_error(self, fsm_module):
         elba = fsm_module.ExtendedLBA(
-            "E", tape_size=[3], axes=1,
-            movement={"F": [1], "B": [-1]}, register="S"
+            "E", tape_size=[3], axes=1, movement={"F": [1], "B": [-1]}, register="S"
         )
         elba.add_terminals("a")
         with pytest.raises(ValueError, match="exceeds tape limit"):
@@ -85,8 +83,7 @@ class TestBoundsEnforcement:
 
     def test_read_at_limit_raises_index_error(self, fsm_module):
         elba = fsm_module.ExtendedLBA(
-            "E", tape_size=[3], axes=1,
-            movement={"F": [1], "B": [-1]}, register="S"
+            "E", tape_size=[3], axes=1, movement={"F": [1], "B": [-1]}, register="S"
         )
         elba.add_terminals("a")
         elba.set_tape(["a"])
@@ -97,8 +94,7 @@ class TestBoundsEnforcement:
 
     def test_write_at_limit_raises_index_error(self, fsm_module):
         elba = fsm_module.ExtendedLBA(
-            "E", tape_size=[3], axes=1,
-            movement={"F": [1], "B": [-1]}, register="S"
+            "E", tape_size=[3], axes=1, movement={"F": [1], "B": [-1]}, register="S"
         )
         elba.add_terminals("a")
         elba.set_tape(["a"])
@@ -109,8 +105,7 @@ class TestBoundsEnforcement:
 
     def test_negative_position_at_limit_raises_index_error(self, fsm_module):
         elba = fsm_module.ExtendedLBA(
-            "E", tape_size=[3], axes=1,
-            movement={"F": [1], "B": [-1]}, register="S"
+            "E", tape_size=[3], axes=1, movement={"F": [1], "B": [-1]}, register="S"
         )
         elba.add_terminals("a")
         elba.set_tape(["a"])

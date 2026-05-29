@@ -8,32 +8,32 @@ Related issues: #22, #8.
 
 import pytest
 
-from fsm_tools.utils.json import (
-    localized_messages,
-    load_message,
-    seek_message,
-    format_message,
-    get_message,
-    generate_message,
-)
+from fsm_tools.constants import ACTIONS, CHOMSKY_GRAMMARS, COMPONENTS
 from fsm_tools.exception import (
-    AutomatonException,
-    AutomatonError,
-    AutomatonGroup,
-    ReadError,
     AddError,
-    RemoveError,
+    AutomatonError,
+    AutomatonException,
+    AutomatonGroup,
     ModifyError,
-    ValidationError,
-    SearchError,
+    ReadError,
     RemoveComponentError,
+    RemoveError,
+    SearchError,
+    ValidationError,
 )
-from fsm_tools.constants import CHOMSKY_GRAMMARS, COMPONENTS, ACTIONS
-
+from fsm_tools.utils.json import (
+    format_message,
+    generate_message,
+    get_message,
+    load_message,
+    localized_messages,
+    seek_message,
+)
 
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture(autouse=True)
 def clear_message_cache():
@@ -46,6 +46,7 @@ def clear_message_cache():
 # ---------------------------------------------------------------------------
 # load_message
 # ---------------------------------------------------------------------------
+
 
 class TestLoadMessage:
 
@@ -67,8 +68,9 @@ class TestLoadMessage:
         assert id(localized_messages["automata"]) != first
 
     def test_unknown_domain_raises_file_not_found(self):
-        with pytest.raises(FileNotFoundError,
-                           match="The JSON file for domain 'unknown' was not found."):
+        with pytest.raises(
+            FileNotFoundError, match="The JSON file for domain 'unknown' was not found."
+        ):
             load_message("unknown")
 
 
@@ -76,19 +78,23 @@ class TestLoadMessage:
 # seek_message
 # ---------------------------------------------------------------------------
 
+
 class TestSeekMessage:
 
-    @pytest.mark.parametrize("msg_id, domain, expected", [
-        ("4101", "automata", "Read the symbols of the alphabet of a finite automaton."),
-        ("4605", "automata", "Validate a finite automaton."),
-        ("1101", "automata", "Read the symbols of the alphabet of a Turing machine."),
-        ("1203", "automata", "Remove a transition from a Turing machine."),
-        ("3519", "automata", "Attempted to remove a symbol from an empty stack."),
-        ("2605", "automata", "Validate a context-sensitive automaton."),
-        ("4101", "errors",   "Unable to read symbols as the alphabet is empty."),
-        ("3519", "errors",   "Error: attempt to pop a symbol from an empty stack."),
-        ("1506", "errors",   "An infinite loop was detected during execution."),
-    ])
+    @pytest.mark.parametrize(
+        "msg_id, domain, expected",
+        [
+            ("4101", "automata", "Read the symbols of the alphabet of a finite automaton."),
+            ("4605", "automata", "Validate a finite automaton."),
+            ("1101", "automata", "Read the symbols of the alphabet of a Turing machine."),
+            ("1203", "automata", "Remove a transition from a Turing machine."),
+            ("3519", "automata", "Attempted to remove a symbol from an empty stack."),
+            ("2605", "automata", "Validate a context-sensitive automaton."),
+            ("4101", "errors", "Unable to read symbols as the alphabet is empty."),
+            ("3519", "errors", "Error: attempt to pop a symbol from an empty stack."),
+            ("1506", "errors", "An infinite loop was detected during execution."),
+        ],
+    )
     def test_seek_known_message(self, msg_id, domain, expected):
         result = seek_message(msg_id, domain)
         assert result == expected
@@ -100,13 +106,15 @@ class TestSeekMessage:
         assert result_default == result_with_lang
 
     def test_unknown_msg_id_raises_key_error(self):
-        with pytest.raises(KeyError,
-                           match="The message with ID '9999' was not found for language 'en-US'."):
+        with pytest.raises(
+            KeyError, match="The message with ID '9999' was not found for language 'en-US'."
+        ):
             seek_message("9999", "automata")
 
     def test_unknown_domain_raises_file_not_found(self):
-        with pytest.raises(FileNotFoundError,
-                           match="The JSON file for domain 'nope' was not found."):
+        with pytest.raises(
+            FileNotFoundError, match="The JSON file for domain 'nope' was not found."
+        ):
             seek_message("4101", "nope")
 
     def test_lazy_load_on_first_call(self):
@@ -125,21 +133,29 @@ class TestSeekMessage:
 # format_message
 # ---------------------------------------------------------------------------
 
+
 class TestFormatMessage:
 
-    @pytest.mark.parametrize("template, kwargs, expected", [
-        ("No placeholders.", {}, "No placeholders."),
-        ("Symbol '{symbol}' is invalid.", {"symbol": "X"}, "Symbol 'X' is invalid."),
-        ("Rule '{lhs}' -> '{rhs}' is malformed.", {"lhs": "A", "rhs": "b"},
-         "Rule 'A' -> 'b' is malformed."),
-        ("Reason: {reason}.", {"reason": "empty alphabet"}, "Reason: empty alphabet."),
-    ])
+    @pytest.mark.parametrize(
+        "template, kwargs, expected",
+        [
+            ("No placeholders.", {}, "No placeholders."),
+            ("Symbol '{symbol}' is invalid.", {"symbol": "X"}, "Symbol 'X' is invalid."),
+            (
+                "Rule '{lhs}' -> '{rhs}' is malformed.",
+                {"lhs": "A", "rhs": "b"},
+                "Rule 'A' -> 'b' is malformed.",
+            ),
+            ("Reason: {reason}.", {"reason": "empty alphabet"}, "Reason: empty alphabet."),
+        ],
+    )
     def test_format_known_templates(self, template, kwargs, expected):
         assert format_message(template, **kwargs) == expected
 
     def test_missing_parameter_raises_value_error(self):
-        with pytest.raises(ValueError,
-                           match="The parameter 'symbol' is missing for formatting the message."):
+        with pytest.raises(
+            ValueError, match="The parameter 'symbol' is missing for formatting the message."
+        ):
             format_message("Symbol '{symbol}' is invalid.")
 
     def test_extra_parameters_are_ignored(self):
@@ -151,20 +167,34 @@ class TestFormatMessage:
 # get_message
 # ---------------------------------------------------------------------------
 
+
 class TestGetMessage:
 
-    @pytest.mark.parametrize("msg_id, domain, kwargs, expected", [
-        ("4101", "automata", {},
-         "Read the symbols of the alphabet of a finite automaton."),
-        ("4102", "errors", {"symbol": "X"},
-         "The symbol 'X' cannot be added as it already exists in the alphabet of the finite automaton."),
-        ("1605", "errors", {"reason": "empty tape"},
-         "The Turing machine is invalid: empty tape."),
-        ("3519", "errors", {},
-         "Error: attempt to pop a symbol from an empty stack."),
-        ("4203", "errors", {"transition": "q0->q1"},
-         "Unable to remove the transition 'q0->q1' as it does not exist in the finite automaton."),
-    ])
+    @pytest.mark.parametrize(
+        "msg_id, domain, kwargs, expected",
+        [
+            ("4101", "automata", {}, "Read the symbols of the alphabet of a finite automaton."),
+            (
+                "4102",
+                "errors",
+                {"symbol": "X"},
+                "The symbol 'X' cannot be added as it already exists in the alphabet of the finite automaton.",
+            ),
+            (
+                "1605",
+                "errors",
+                {"reason": "empty tape"},
+                "The Turing machine is invalid: empty tape.",
+            ),
+            ("3519", "errors", {}, "Error: attempt to pop a symbol from an empty stack."),
+            (
+                "4203",
+                "errors",
+                {"transition": "q0->q1"},
+                "Unable to remove the transition 'q0->q1' as it does not exist in the finite automaton.",
+            ),
+        ],
+    )
     def test_get_known_message(self, msg_id, domain, kwargs, expected):
         assert get_message(msg_id, domain, **kwargs) == expected
 
@@ -178,8 +208,9 @@ class TestGetMessage:
             get_message("0000", "automata")
 
     def test_missing_format_parameter_raises_value_error(self):
-        with pytest.raises(ValueError,
-                           match="The parameter 'symbol' is missing for formatting the message."):
+        with pytest.raises(
+            ValueError, match="The parameter 'symbol' is missing for formatting the message."
+        ):
             get_message("4102", "errors")  # requires {symbol}
 
 
@@ -187,24 +218,70 @@ class TestGetMessage:
 # generate_message
 # ---------------------------------------------------------------------------
 
+
 class TestGenerateMessage:
 
-    @pytest.mark.parametrize("grammar, component, action, domain, kwargs, expected", [
-        ("Regular", "alphabet", "read", "automata", {},
-         "Read the symbols of the alphabet of a finite automaton."),
-        ("Regular", "alphabet", "add", "automata", {},
-         "Add a symbol to the alphabet of a finite automaton."),
-        ("Recursively Enumerable", "alphabet", "read", "automata", {},
-         "Read the symbols of the alphabet of a Turing machine."),
-        ("Context-Free", "stack", "withdraw", "automata", {},
-         "Attempted to remove a symbol from an empty stack."),
-        ("Context-Sensitive", "validation", "validate", "automata", {},
-         "Validate a context-sensitive automaton."),
-        ("Regular", "alphabet", "add", "errors", {"symbol": "Z"},
-         "The symbol 'Z' cannot be added as it already exists in the alphabet of the finite automaton."),
-        ("Recursively Enumerable", "validation", "validate", "errors", {"reason": "loop"},
-         "The Turing machine is invalid: loop."),
-    ])
+    @pytest.mark.parametrize(
+        "grammar, component, action, domain, kwargs, expected",
+        [
+            (
+                "Regular",
+                "alphabet",
+                "read",
+                "automata",
+                {},
+                "Read the symbols of the alphabet of a finite automaton.",
+            ),
+            (
+                "Regular",
+                "alphabet",
+                "add",
+                "automata",
+                {},
+                "Add a symbol to the alphabet of a finite automaton.",
+            ),
+            (
+                "Recursively Enumerable",
+                "alphabet",
+                "read",
+                "automata",
+                {},
+                "Read the symbols of the alphabet of a Turing machine.",
+            ),
+            (
+                "Context-Free",
+                "stack",
+                "withdraw",
+                "automata",
+                {},
+                "Attempted to remove a symbol from an empty stack.",
+            ),
+            (
+                "Context-Sensitive",
+                "validation",
+                "validate",
+                "automata",
+                {},
+                "Validate a context-sensitive automaton.",
+            ),
+            (
+                "Regular",
+                "alphabet",
+                "add",
+                "errors",
+                {"symbol": "Z"},
+                "The symbol 'Z' cannot be added as it already exists in the alphabet of the finite automaton.",
+            ),
+            (
+                "Recursively Enumerable",
+                "validation",
+                "validate",
+                "errors",
+                {"reason": "loop"},
+                "The Turing machine is invalid: loop.",
+            ),
+        ],
+    )
     def test_generate_known_message(self, grammar, component, action, domain, kwargs, expected):
         result = generate_message(grammar, component, action, domain, **kwargs)
         assert result == expected
@@ -223,20 +300,23 @@ class TestGenerateMessage:
             generate_message("Unknown", "alphabet", "read", "automata")
 
     def test_unknown_domain_raises_file_not_found(self):
-        with pytest.raises(FileNotFoundError,
-                           match="The JSON file for domain 'bogus' was not found."):
+        with pytest.raises(
+            FileNotFoundError, match="The JSON file for domain 'bogus' was not found."
+        ):
             generate_message("Regular", "alphabet", "read", "bogus")
 
     def test_missing_format_parameter_raises_value_error(self):
         # errors/Regular/alphabet/add requires {symbol}
-        with pytest.raises(ValueError,
-                           match="The parameter 'symbol' is missing for formatting the message."):
+        with pytest.raises(
+            ValueError, match="The parameter 'symbol' is missing for formatting the message."
+        ):
             generate_message("Regular", "alphabet", "add", "errors")
 
 
 # ---------------------------------------------------------------------------
 # AutomatonException — base class
 # ---------------------------------------------------------------------------
+
 
 class TestAutomatonException:
 
@@ -251,18 +331,19 @@ class TestAutomatonException:
     def test_error_code_computation(self):
         exc = AutomatonException("Regular", "alphabet", "read")
         expected = (
-            1000 * CHOMSKY_GRAMMARS["Regular"]
-            + 100 * COMPONENTS["alphabet"]
-            + ACTIONS["read"]
+            1000 * CHOMSKY_GRAMMARS["Regular"] + 100 * COMPONENTS["alphabet"] + ACTIONS["read"]
         )
         assert exc.value == expected
 
-    @pytest.mark.parametrize("grammar, component, action", [
-        ("Regular", "alphabet", "read"),
-        ("Context-Free", "stack", "withdraw"),
-        ("Context-Sensitive", "validation", "validate"),
-        ("Recursively Enumerable", "alphabet", "read"),
-    ])
+    @pytest.mark.parametrize(
+        "grammar, component, action",
+        [
+            ("Regular", "alphabet", "read"),
+            ("Context-Free", "stack", "withdraw"),
+            ("Context-Sensitive", "validation", "validate"),
+            ("Recursively Enumerable", "alphabet", "read"),
+        ],
+    )
     def test_all_chomsky_levels(self, grammar, component, action):
         exc = AutomatonException(grammar, component, action)
         assert exc.grammar == grammar
@@ -308,6 +389,7 @@ class TestAutomatonException:
 # AutomatonGroup
 # ---------------------------------------------------------------------------
 
+
 class TestAutomatonGroup:
 
     def test_add_exception(self):
@@ -327,46 +409,56 @@ class TestAutomatonGroup:
 # Specialised exception classes
 # ---------------------------------------------------------------------------
 
+
 class TestSpecialisedExceptions:
 
-    @pytest.mark.parametrize("cls, component, action, event", [
-        (ReadError,            "alphabet",   "read",     {}),
-        (AddError,             "alphabet",   "add",      {"symbol": "x"}),
-        (RemoveError,          "alphabet",   "remove",   {"symbol": "x"}),
-        (ModifyError,          "alphabet",   "modify",   {"symbol": "x"}),
-        (ValidationError,      "validation", "validate", {"reason": "test"}),
-        (SearchError,          "validation", "search",   {"reason": "test"}),
-        (RemoveComponentError, "stack",      "withdraw", {}),
-    ])
+    @pytest.mark.parametrize(
+        "cls, component, action, event",
+        [
+            (ReadError, "alphabet", "read", {}),
+            (AddError, "alphabet", "add", {"symbol": "x"}),
+            (RemoveError, "alphabet", "remove", {"symbol": "x"}),
+            (ModifyError, "alphabet", "modify", {"symbol": "x"}),
+            (ValidationError, "validation", "validate", {"reason": "test"}),
+            (SearchError, "validation", "search", {"reason": "test"}),
+            (RemoveComponentError, "stack", "withdraw", {}),
+        ],
+    )
     def test_action_attribute(self, cls, component, action, event):
         grammar = "Context-Free" if cls is RemoveComponentError else "Regular"
         exc = cls(grammar, component, **event)
         assert exc.action == action
 
-    @pytest.mark.parametrize("cls, component, event", [
-        (ReadError,            "alphabet",   {}),
-        (AddError,             "alphabet",   {"symbol": "x"}),
-        (RemoveError,          "alphabet",   {"symbol": "x"}),
-        (ModifyError,          "alphabet",   {"symbol": "x"}),
-        (ValidationError,      "validation", {"reason": "test"}),
-        (SearchError,          "validation", {"reason": "test"}),
-        (RemoveComponentError, "stack",      {}),
-    ])
+    @pytest.mark.parametrize(
+        "cls, component, event",
+        [
+            (ReadError, "alphabet", {}),
+            (AddError, "alphabet", {"symbol": "x"}),
+            (RemoveError, "alphabet", {"symbol": "x"}),
+            (ModifyError, "alphabet", {"symbol": "x"}),
+            (ValidationError, "validation", {"reason": "test"}),
+            (SearchError, "validation", {"reason": "test"}),
+            (RemoveComponentError, "stack", {}),
+        ],
+    )
     def test_is_automaton_error(self, cls, component, event):
         grammar = "Context-Free" if cls is RemoveComponentError else "Regular"
         exc = cls(grammar, component, **event)
         assert isinstance(exc, AutomatonError)
         assert isinstance(exc, AutomatonException)
 
-    @pytest.mark.parametrize("cls, grammar, component, event", [
-        (ReadError,            "Recursively Enumerable", "alphabet",    {}),
-        (AddError,             "Context-Free",           "stack",       {"symbol": "x"}),
-        (RemoveError,          "Context-Sensitive",      "states",      {"symbol": "x"}),
-        (ModifyError,          "Regular",                "transitions", {"transition": "q0"}),
-        (ValidationError,      "Regular",                "validation",  {"reason": "test"}),
-        (SearchError,          "Context-Free",           "validation",  {"reason": "test"}),
-        (RemoveComponentError, "Context-Free",           "stack",       {}),
-    ])
+    @pytest.mark.parametrize(
+        "cls, grammar, component, event",
+        [
+            (ReadError, "Recursively Enumerable", "alphabet", {}),
+            (AddError, "Context-Free", "stack", {"symbol": "x"}),
+            (RemoveError, "Context-Sensitive", "states", {"symbol": "x"}),
+            (ModifyError, "Regular", "transitions", {"transition": "q0"}),
+            (ValidationError, "Regular", "validation", {"reason": "test"}),
+            (SearchError, "Context-Free", "validation", {"reason": "test"}),
+            (RemoveComponentError, "Context-Free", "stack", {}),
+        ],
+    )
     def test_grammar_and_component(self, cls, grammar, component, event):
         exc = cls(grammar, component, **event)
         assert exc.grammar == grammar

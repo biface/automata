@@ -21,10 +21,8 @@ def load_message(domain: str) -> None:
     :type domain: str
     :raises FileNotFoundError: If the JSON file for the domain does not exist.
     """
-    global localized_messages
-    json_file_path = os.path.join(
-        path.parent.absolute(), "locales", domain + ".json"
-    )
+    # global localized_messages
+    json_file_path = os.path.join(path.parent.absolute(), "locales", domain + ".json")
 
     if not os.path.isfile(json_file_path):
         raise FileNotFoundError(f"The JSON file for domain '{domain}' was not found.")
@@ -57,9 +55,7 @@ def seek_message(msg_id: str, domain: str, lang: str = None) -> str:
     active_lang = _DEFAULT_LANG
 
     if active_lang not in messages:
-        raise KeyError(
-            f"Language '{active_lang}' is not available in domain '{domain}'."
-        )
+        raise KeyError(f"Language '{active_lang}' is not available in domain '{domain}'.")
 
     if msg_id not in messages[active_lang]:
         raise KeyError(
@@ -83,9 +79,7 @@ def format_message(template: str, **kwargs) -> str:
     try:
         return template.format(**kwargs)
     except KeyError as e:
-        raise ValueError(
-            f"The parameter '{e.args[0]}' is missing for formatting the message."
-        )
+        raise ValueError(f"The parameter '{e.args[0]}' is missing for formatting the message.")
 
 
 def get_message(msg_id: str, domain: str, lang: str = None, **kwargs) -> str:

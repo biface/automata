@@ -165,10 +165,7 @@ class Automaton:
         :raise AddError: If a symbol is already in the alphabet or states.
         """
         for symbol in terminals:
-            if (
-                symbol not in self.grammar.alphabet
-                and symbol not in self.grammar.states
-            ):
+            if symbol not in self.grammar.alphabet and symbol not in self.grammar.states:
                 self.grammar.alphabet.add(symbol)
             else:
                 raise AddError(self.GRAMMAR, "alphabet", symbol=symbol)
@@ -690,9 +687,7 @@ class TuringMachine(Automaton):
 
         # Ensure that the direction is valid (either 'L' or 'R').
         if move_direction not in self.moves:
-            raise ValueError(
-                f"Invalid move direction '{move_direction}'. Must be {self.moves}."
-            )
+            raise ValueError(f"Invalid move direction '{move_direction}'. Must be {self.moves}.")
 
         # Add the transition rule to the list of rules (grammar rules).
         transition_rule = (state_from, symbol, state_to, write_symbol, move_direction)
@@ -700,9 +695,7 @@ class TuringMachine(Automaton):
         for state in (state_from, state_to):
             if state not in self.get_states():
                 self.add_non_terminals(state)
-        self.add_rules(
-            transition_rule
-        )  # Adding the rule to the machine's grammar rules.
+        self.add_rules(transition_rule)  # Adding the rule to the machine's grammar rules.
 
     def step(self):
         """Execute one step of the Turing Machine based on current state and symbol."""
@@ -716,9 +709,7 @@ class TuringMachine(Automaton):
                 self.move(move_direction)
                 self.register = state_to
                 if state_to not in self.get_states():
-                    self.add_non_terminals(
-                        state_to
-                    )  # Add the new state to the set of states
+                    self.add_non_terminals(state_to)  # Add the new state to the set of states
                 break  # Exit after finding and executing a valid rule
         else:
             raise Exception(
@@ -794,9 +785,7 @@ class LinearBoundedAutomaton(TuringMachine):
         if len(tape_size) == self.axes:
             self.limits = tape_size  # Input size, defining the tape size limit.
         else:
-            raise ValueError(
-                f"Invalid tape size {tape_size}. Must be contains {self.axes} values."
-            )
+            raise ValueError(f"Invalid tape size {tape_size}. Must be contains {self.axes} values.")
 
     def _extend_tape(self, location: list) -> None:
         """
@@ -829,8 +818,7 @@ class LinearBoundedAutomaton(TuringMachine):
         """
         if len(content) > self.limits[0]:
             raise ValueError(
-                f"Input length {len(content)} exceeds the tape limit "
-                f"of {self.limits[0]}."
+                f"Input length {len(content)} exceeds the tape limit " f"of {self.limits[0]}."
             )
 
         super().set_tape(content, location)

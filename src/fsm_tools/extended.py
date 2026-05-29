@@ -60,9 +60,7 @@ class ExtendedTuringMachine(TuringMachine):
         :raises ValueError: If ``axes`` is less than 1.
         """
         if axes < 1:
-            raise ValueError(
-                f"ExtendedTuringMachine requires at least 1 axis. Got axes={axes}."
-            )
+            raise ValueError(f"ExtendedTuringMachine requires at least 1 axis. Got axes={axes}.")
 
     def __init__(
         self,
@@ -138,6 +136,7 @@ class ExtendedTuringMachine(TuringMachine):
         :type location: List[int] | None
         :raises ReadError: If any symbol is not in the alphabet.
         """
+
         def validate_and_load(data: Any, coords: list) -> None:
             if isinstance(data, list):
                 for i, item in enumerate(data):
@@ -254,6 +253,7 @@ class ExtendedLBA(ExtendedTuringMachine):
         :raises ValueError: If content in any dimension exceeds its limit.
         :raises ReadError: If any symbol is not in the alphabet.
         """
+
         def validate_and_load(data: Any, coords: list) -> None:
             if isinstance(data, list):
                 dim = len(coords)

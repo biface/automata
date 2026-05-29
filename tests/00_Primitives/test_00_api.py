@@ -27,9 +27,16 @@ class TestPublicAPIClasses:
     def test_exception_hierarchy_exported(self, fsm_module):
         """All exception classes are accessible from fsm_tools."""
         for name in (
-            "AutomatonException", "AutomatonError", "AutomatonGroup",
-            "ReadError", "AddError", "RemoveError", "ModifyError",
-            "ValidationError", "SearchError", "RemoveComponentError",
+            "AutomatonException",
+            "AutomatonError",
+            "AutomatonGroup",
+            "ReadError",
+            "AddError",
+            "RemoveError",
+            "ModifyError",
+            "ValidationError",
+            "SearchError",
+            "RemoveComponentError",
         ):
             assert hasattr(fsm_module, name), f"Missing: {name}"
 

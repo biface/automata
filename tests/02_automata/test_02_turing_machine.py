@@ -226,8 +226,7 @@ class TestStep:
     def test_full_run_symbol_replacement(self, fsm_module):
         """Replace all 'a' with 'b' until blank: aaa → bbb."""
         tm = fsm_module.TuringMachine(
-            "Replace", blank_symbol="_",
-            movement={"R": [1]}, register="q0"
+            "Replace", blank_symbol="_", movement={"R": [1]}, register="q0"
         )
         tm.add_terminals("a", "b")
         tm.add_transition("q0", "a", "q0", "b", "R")

@@ -23,9 +23,7 @@ def generate_code(grammar: str, component: str, action: str) -> str:
     if action not in ACTIONS.keys():
         raise KeyError("Unknown action name")
 
-    return str(
-        1000 * CHOMSKY_GRAMMARS[grammar] + 100 * COMPONENTS[component] + ACTIONS[action]
-    )
+    return str(1000 * CHOMSKY_GRAMMARS[grammar] + 100 * COMPONENTS[component] + ACTIONS[action])
 
 
 def id_code(weights: List[int], values: List[int]) -> str:

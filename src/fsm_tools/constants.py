@@ -11,14 +11,14 @@ CHOMSKY_GRAMMARS = {
     "Recursively Enumerable": 1,
 }
 """
-CHOMSKY_GRAMMAR is a dictionary that maps the different types of grammars 
-in the Chomsky hierarchy to their corresponding integer values. These integer 
-values are primarily used for message handling, error reporting, and processing 
+CHOMSKY_GRAMMAR is a dictionary that maps the different types of grammars
+in the Chomsky hierarchy to their corresponding integer values. These integer
+values are primarily used for message handling, error reporting, and processing
 purposes.
 
-Each grammar type in the hierarchy is assigned a unique integer value based on 
-its rank in the hierarchy. The values are incremented by 1 from their theoretical 
-positions (e.g., Type-0 → 1, Type-1 → 2, etc.) to ensure the values are suitable 
+Each grammar type in the hierarchy is assigned a unique integer value based on
+its rank in the hierarchy. The values are incremented by 1 from their theoretical
+positions (e.g., Type-0 → 1, Type-1 → 2, etc.) to ensure the values are suitable
 for computation and indexing in various operations.
 
 The mapping is as follows:
@@ -27,7 +27,7 @@ The mapping is as follows:
     - "Type-2" (Context-Free Grammar): Value 3
     - "Type-3" (Regular Grammar): Value 4
 
-This structure allows the grammar types to be easily referenced and utilized in 
+This structure allows the grammar types to be easily referenced and utilized in
 applications where a numeric representation is required.
 """
 # Components within automata
@@ -45,11 +45,11 @@ COMPONENTS = {
     "blank": 11,
 }
 """
-COMPONENTS is a dictionary that assigns a unique integer value to each key 
-representing a fundamental component in computational models and formal grammar processing. 
+COMPONENTS is a dictionary that assigns a unique integer value to each key
+representing a fundamental component in computational models and formal grammar processing.
 
-The integer values serve as identifiers, used for ordering, processing, or error handling 
-in various operations. The values are assigned in a manner that reflects their relative 
+The integer values serve as identifiers, used for ordering, processing, or error handling
+in various operations. The values are assigned in a manner that reflects their relative
 importance or usage frequency in certain contexts.
 
 The mapping is as follows:
@@ -60,7 +60,7 @@ The mapping is as follows:
     - "grammar": Value 4 - Represents the formal grammar associated with the automaton or model.
     - "validation": Value 6 - Represents the validation component for string recognition or processing.
 
-These integer values provide a straightforward way to reference or prioritize components 
+These integer values provide a straightforward way to reference or prioritize components
 in computational workflows.
 """
 
@@ -77,11 +77,11 @@ ACTIONS = {
     "move": 8,
 }
 """
-ACTIONS is a dictionary that maps common operations or actions to unique integer values, 
+ACTIONS is a dictionary that maps common operations or actions to unique integer values,
 providing a standardized way to reference and process these actions in computational workflows.
 
-The integer values are used as identifiers for ordering, prioritization, or error handling 
-during the execution of various tasks. These values are designed to be consistent and 
+The integer values are used as identifiers for ordering, prioritization, or error handling
+during the execution of various tasks. These values are designed to be consistent and
 easily computable.
 
 The mapping is as follows:
@@ -93,6 +93,6 @@ The mapping is as follows:
     - "search": Value 6 - Represents the action of locating specific elements or data.
     - "withdraw": Value 19 - Represents the action of retracting or taking back elements.
 
-These integer values ensure consistency in referencing actions across different modules 
+These integer values ensure consistency in referencing actions across different modules
 or systems, enabling streamlined processing and error management.
 """

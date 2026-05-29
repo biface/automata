@@ -1,12 +1,14 @@
 import pytest
 
-from fsm_tools.advanced import Grammar, Automaton
-from fsm_tools.exception import ReadError, AddError, RemoveError, ModifyError
+from fsm_tools.advanced import Automaton, Grammar
+from fsm_tools.exception import AddError, ModifyError, ReadError, RemoveError
+
 
 @pytest.fixture
 def automaton_instance():
     """Fixture to create an Automaton instance."""
     return Automaton(name="TestAutomaton", chomsky="Regular")
+
 
 def test_initialization(automaton_instance):
     """Test initialization of Automaton."""
@@ -15,15 +17,18 @@ def test_initialization(automaton_instance):
     assert automaton_instance.TYPE == 3
     assert isinstance(automaton_instance.grammar, Grammar)
 
+
 def test_invalid_chomsky_type():
     """Test exception raised for invalid Chomsky grammar type."""
     with pytest.raises(KeyError):
         Automaton(name="InvalidAutomaton", chomsky="InvalidType")
 
+
 def test_automaton_requires_chomsky():
     """Chomsky classification is mandatory for all Chomsky-hierarchy automata."""
     with pytest.raises(TypeError):
         Automaton(name="NoChomsky")
+
 
 def test_get_terminals(automaton_instance):
     """Test retrieving terminal symbols."""
@@ -32,12 +37,14 @@ def test_get_terminals(automaton_instance):
     automaton_instance.add_terminals("a", "b")
     assert automaton_instance.get_terminals() == {"a", "b"}
 
+
 def test_add_terminals(automaton_instance):
     """Test adding terminal symbols."""
     automaton_instance.add_terminals("x", "y")
     assert automaton_instance.get_terminals() == {"x", "y"}
     with pytest.raises(AddError):
         automaton_instance.add_terminals("x")  # Duplicate terminal
+
 
 def test_remove_terminals(automaton_instance):
     """Test removing terminal symbols."""
@@ -49,7 +56,8 @@ def test_remove_terminals(automaton_instance):
         automaton_instance.remove_terminals("a")
     automaton_instance.remove_terminals("b")
     with pytest.raises(ReadError):
-        automaton_instance.get_terminals()# Non-existent terminal
+        automaton_instance.get_terminals()  # Non-existent terminal
+
 
 def test_modify_terminal(automaton_instance):
     """Test modifying terminal symbols."""
@@ -60,6 +68,7 @@ def test_modify_terminal(automaton_instance):
     with pytest.raises(ModifyError):
         automaton_instance.modify_terminal("c", "d")  # Non-existent terminal
 
+
 def test_withdraw_terminal(automaton_instance):
     """Test withdrawing all terminals."""
     automaton_instance.add_terminals("a", "b")
@@ -68,10 +77,12 @@ def test_withdraw_terminal(automaton_instance):
     with pytest.raises(ReadError):
         automaton_instance.withdraw_terminal()  # Already empty
 
+
 def test_get_states(automaton_instance):
     """Test retrieving states."""
     automaton_instance.add_non_terminals("S", "A")
     assert automaton_instance.get_states() == {"S", "A"}
+
 
 def test_add_non_terminals(automaton_instance):
     """Test adding non-terminal symbols."""
@@ -80,6 +91,7 @@ def test_add_non_terminals(automaton_instance):
     with pytest.raises(AddError):
         automaton_instance.add_non_terminals("S")  # Duplicate non-terminal
 
+
 def test_remove_non_terminals(automaton_instance):
     """Test removing non-terminal symbols."""
     automaton_instance.add_non_terminals("S", "T")
@@ -87,6 +99,7 @@ def test_remove_non_terminals(automaton_instance):
     assert "S" not in automaton_instance.get_states()
     with pytest.raises(RemoveError):
         automaton_instance.remove_non_terminals("S")  # Non-existent non-terminal
+
 
 def test_modify_non_terminal(automaton_instance):
     """Test modifying non-terminal symbols."""
@@ -97,6 +110,7 @@ def test_modify_non_terminal(automaton_instance):
     with pytest.raises(ModifyError):
         automaton_instance.modify_non_terminal("B", "C")  # Non-existent non-terminal
 
+
 def test_withdraw_non_terminal(automaton_instance):
     """Test withdrawing all non-terminals."""
     automaton_instance.add_non_terminals("S", "A")
@@ -105,6 +119,7 @@ def test_withdraw_non_terminal(automaton_instance):
     with pytest.raises(KeyError):
         automaton_instance.withdraw_non_terminal()  # Already empty
 
+
 def test_get_rules(automaton_instance):
     """Test retrieving rules."""
     with pytest.raises(ValueError):
@@ -112,10 +127,12 @@ def test_get_rules(automaton_instance):
     automaton_instance.add_rules("S -> A", "A -> a")
     assert automaton_instance.get_rules() == ["S -> A", "A -> a"]
 
+
 def test_add_rules(automaton_instance):
     """Test adding rules."""
     automaton_instance.add_rules("S -> A")
     assert "S -> A" in automaton_instance.get_rules()
+
 
 def test_remove_rules(automaton_instance):
     """Test removing rules."""
@@ -125,6 +142,7 @@ def test_remove_rules(automaton_instance):
     with pytest.raises(ValueError):
         automaton_instance.remove_rules("S -> A")  # Non-existent rule
 
+
 def test_withdraw_rules(automaton_instance):
     """Test withdrawing all rules."""
     automaton_instance.add_rules("S -> A")
@@ -132,6 +150,7 @@ def test_withdraw_rules(automaton_instance):
     assert automaton_instance.grammar.rules == []
     with pytest.raises(ValueError):
         automaton_instance.withdraw_rules()  # Already empty
+
 
 def test_withdraw_grammar(automaton_instance):
     """Test withdrawing the entire grammar."""

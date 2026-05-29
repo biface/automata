@@ -85,9 +85,7 @@ class AutomatonException(Exception):
 
     def generate_message(self, locale: str) -> str:
         """ """
-        return generate_message(
-            self.grammar, self.component, self.action, self.domains[0], locale
-        )
+        return generate_message(self.grammar, self.component, self.action, self.domains[0], locale)
 
     def __str__(self):
         return self.message

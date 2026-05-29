@@ -25,9 +25,7 @@ class TestInitialization:
 
     def test_tape_size_mismatch_raises_value_error(self, fsm_module):
         with pytest.raises(ValueError, match="Must be contains"):
-            fsm_module.LinearBoundedAutomaton(
-                "LBA", tape_size=[5, 5], axes=1, register="S"
-            )
+            fsm_module.LinearBoundedAutomaton("LBA", tape_size=[5, 5], axes=1, register="S")
 
 
 class TestSetTape:
@@ -45,8 +43,7 @@ class TestSetTape:
 
     def test_content_at_exact_limit(self, fsm_module):
         lba = fsm_module.LinearBoundedAutomaton(
-            "LBA", tape_size=[3], axes=1,
-            movement={"F": [1], "B": [-1]}, register="S"
+            "LBA", tape_size=[3], axes=1, movement={"F": [1], "B": [-1]}, register="S"
         )
         lba.add_terminals("a")
         lba.set_tape(["a", "a", "a"])
@@ -54,8 +51,7 @@ class TestSetTape:
 
     def test_content_exceeds_limit_raises_value_error(self, fsm_module):
         lba = fsm_module.LinearBoundedAutomaton(
-            "LBA", tape_size=[3], axes=1,
-            movement={"F": [1], "B": [-1]}, register="S"
+            "LBA", tape_size=[3], axes=1, movement={"F": [1], "B": [-1]}, register="S"
         )
         lba.add_terminals("a")
         with pytest.raises(ValueError, match="exceeds the tape limit"):
@@ -77,8 +73,7 @@ class TestExtendTape:
 
     def test_head_at_limit_raises_index_error(self, fsm_module):
         lba = fsm_module.LinearBoundedAutomaton(
-            "LBA", tape_size=[3], axes=1,
-            movement={"F": [1], "B": [-1]}, register="S"
+            "LBA", tape_size=[3], axes=1, movement={"F": [1], "B": [-1]}, register="S"
         )
         lba.add_terminals("a")
         lba.set_tape(["a", "a", "a"])
@@ -97,8 +92,7 @@ class TestStep:
 
     def test_step_basic_transition(self, fsm_module):
         lba = fsm_module.LinearBoundedAutomaton(
-            "LBA", tape_size=[5], axes=1,
-            movement={"F": [1], "B": [-1]}, register="S"
+            "LBA", tape_size=[5], axes=1, movement={"F": [1], "B": [-1]}, register="S"
         )
         lba.add_terminals("a", "b")
         lba.add_transition("S", "a", "S1", "b", "F")
@@ -111,8 +105,7 @@ class TestStep:
 
     def test_step_no_transition_raises(self, fsm_module):
         lba = fsm_module.LinearBoundedAutomaton(
-            "LBA", tape_size=[5], axes=1,
-            movement={"F": [1], "B": [-1]}, register="S"
+            "LBA", tape_size=[5], axes=1, movement={"F": [1], "B": [-1]}, register="S"
         )
         lba.add_terminals("a")
         lba.set_tape(["a"])
@@ -122,8 +115,7 @@ class TestStep:
     def test_step_at_boundary_raises_index_error(self, fsm_module):
         """Head at limit raises IndexError before transition is applied."""
         lba = fsm_module.LinearBoundedAutomaton(
-            "LBA", tape_size=[2], axes=1,
-            movement={"F": [1]}, register="S"
+            "LBA", tape_size=[2], axes=1, movement={"F": [1]}, register="S"
         )
         lba.add_terminals("a")
         # After one step, head moves to position 1 (= limit) — next read raises IndexError
@@ -140,8 +132,7 @@ class TestStep:
     def test_full_run_palindrome_marker(self, fsm_module):
         """Mark first symbol: a → x, then halt."""
         lba = fsm_module.LinearBoundedAutomaton(
-            "LBA", tape_size=[5], axes=1,
-            movement={"F": [1], "B": [-1]}, register="q0"
+            "LBA", tape_size=[5], axes=1, movement={"F": [1], "B": [-1]}, register="q0"
         )
         lba.add_terminals("a", "b")
         lba.add_transition("q0", "a", "OK", "x", "F")

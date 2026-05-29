@@ -12,12 +12,13 @@ Fixture scopes:
 """
 
 import importlib
-import pytest
 
+import pytest
 
 # ---------------------------------------------------------------------------
 # Module fixtures (session-scoped)
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture(scope="session")
 def fsm_module():
@@ -53,6 +54,7 @@ def constants_module():
 # TuringMachine instances (function-scoped)
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def tm_instance(fsm_module):
     """Standard 1D TuringMachine with F/B moves and register S."""
@@ -78,6 +80,7 @@ def tm_with_tape(tm_instance):
 # ---------------------------------------------------------------------------
 # LinearBoundedAutomaton instances (function-scoped)
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def lba_instance(fsm_module):
@@ -105,6 +108,7 @@ def lba_with_tape(lba_instance):
 # ---------------------------------------------------------------------------
 # ExtendedTuringMachine instances (function-scoped)
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def etm_instance(fsm_module):
@@ -136,6 +140,7 @@ def etm_2d_instance(fsm_module):
 # ---------------------------------------------------------------------------
 # ExtendedLBA instances (function-scoped)
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def elba_instance(fsm_module):
