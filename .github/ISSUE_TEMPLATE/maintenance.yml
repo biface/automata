@@ -1,0 +1,113 @@
+name: "🔧 Maintenance"
+description: >
+  Technical task with no new feature: docs, refactoring,
+  tests, CI/CD, performance, deprecation.
+title: "[MAINT] "
+labels:
+  - "status: triage"
+
+body:
+  - type: dropdown
+    id: maint-type
+    attributes:
+      label: "Task type"
+      description: >
+        Select the primary type, then replace `status: triage`
+        with the matching `type:` label after creation.
+      options:
+        - "chore       — dependencies, housekeeping, configuration"
+        - "docs        — docstrings, Sphinx, README, guides, examples"
+        - "test        — adding or fixing tests, coverage"
+        - "refactor    — restructuring without behaviour change"
+        - "ci          — tox, GitHub Actions, pipeline config"
+        - "perf        — performance optimisation"
+        - "deprecation — mark obsolete code with deprecation warnings"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description"
+      description: "What needs to be done, and why now?"
+      placeholder: >
+        Fix `TuringMachine._extend_tape` — the method body is currently empty,
+        causing the head to be unable to move beyond initial tape content.
+    validations:
+      required: true
+
+  - type: textarea
+    id: done
+    attributes:
+      label: "Completion criteria"
+      description: "Objective conditions to close this issue."
+      placeholder: |
+        - [ ] `pytest --tb=short` passes
+        - [ ] `tox -e ci-quality`: 0 errors
+        - [ ] Coverage ≥ 80%
+        - [ ] `CHANGELOG.md` updated if necessary
+      render: markdown
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: "Urgency (optional)"
+      description: >
+        Why this task now rather than later?
+        E.g.: blocking technical debt, prerequisite for a milestone.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: "Affected scopes"
+      description: "Apply the matching `scope:` labels manually after creation."
+      options:
+        - label: "`api` — public interface"
+        - label: "`docs` — docstrings, Sphinx, guides"
+        - label: "`tests` — pytest, coverage"
+        - label: "`ci` — tox, GitHub Actions, pipeline"
+        - label: "`ui` — error messages, output formatting"
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: "Priority"
+      description: "Apply the matching `priority:` label after creation."
+      options:
+        - "none — someday, out of sprint"
+        - "low — before the next minor version"
+        - "medium — in the target version"
+        - "high — blocks the release or CI"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: effort
+    attributes:
+      label: "Estimated effort"
+      description: "Apply the matching `effort:` label after creation."
+      options:
+        - "XS — < 1 h"
+        - "S  — half-day"
+        - "M  — 1 day"
+        - "L  — 2–3 days"
+        - "XL — > 3 days"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: ecosystem
+    attributes:
+      label: "Ecosystem layer"
+      description: "Apply the matching `ecosystem:` label after creation."
+      options:
+        - "language — Python idioms, typing"
+        - "framework — library or framework architecture"
+        - "ops — PyPI publishing, packaging"
+        - "pipeline — tox, GitHub Actions, CI tooling"
+    validations:
+      required: false
