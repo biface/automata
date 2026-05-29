@@ -5,6 +5,10 @@ updates:
     schedule:
       interval: "weekly"
     target-branch: "master"
+    labels:
+      - "type: ci"
+      - "ecosystem: pipeline"
+      - "priority: low"
     commit-message:
       prefix: "ci"
 
@@ -13,5 +17,9 @@ updates:
     schedule:
       interval: "monthly"
     target-branch: "master"
+    labels:
+      - "type: chore"
+      - "ecosystem: language"
+      - "priority: low"
     commit-message:
       prefix: "chore"
