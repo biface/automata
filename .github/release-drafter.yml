@@ -1,0 +1,126 @@
+# =============================================================================
+# release-drafter.yml — Release Drafter configuration for fsm-tools
+# =============================================================================
+# Referenced by: .github/workflows/release-drafter-workflow.yml
+# Versioning scheme: SemVer vX.Y.Z
+#
+# Label → category mapping follows the label schema (automata-labels.yml).
+# Categories are ordered by descending importance in the release notes.
+# =============================================================================
+
+# name-template is intentionally omitted — release names are set manually
+# in the GitHub draft UI (e.g. "PushdownAutomaton" for v0.1.0).
+tag-template: "v$RESOLVED_VERSION"
+
+# Version resolution from labels
+version-resolver:
+  major:
+    labels:
+      - "type: breaking"
+  minor:
+    labels:
+      - "type: feature"
+      - "type: deprecation"
+  patch:
+    labels:
+      - "type: bug"
+      - "type: refactor"
+      - "type: docs"
+      - "type: ci"
+      - "type: chore"
+      - "type: test"
+      - "type: decision"
+  default: patch
+
+categories:
+  - title: "⚠️ Breaking Changes"
+    labels:
+      - "type: breaking"
+
+  - title: "✨ New Features"
+    labels:
+      - "type: feature"
+
+  - title: "🐛 Bug Fixes"
+    labels:
+      - "type: bug"
+
+  - title: "🏗️ Architecture Decisions"
+    labels:
+      - "type: decision"
+
+  - title: "⏰ Deprecations"
+    labels:
+      - "type: deprecation"
+
+  - title: "♻️ Refactoring"
+    labels:
+      - "type: refactor"
+
+  - title: "📖 Documentation"
+    labels:
+      - "type: docs"
+
+  - title: "🧪 Tests"
+    labels:
+      - "type: test"
+
+  - title: "🔧 Maintenance"
+    labels:
+      - "type: chore"
+      - "type: ci"
+
+  - title: "📦 Other Changes"
+    labels:
+      - "default"
+
+# PRs excluded from release notes entirely
+exclude-labels:
+  - "status: duplicate"
+  - "status: wontfix"
+  - "status: invalid"
+
+# Release notes template
+template: |
+  ## What's Changed
+
+  $CHANGES
+
+  ---
+
+  ### Quality gates
+  <!-- Verify before publishing the release -->
+  | Gate | Command | Status |
+  |------|---------|--------|
+  | Tests | `tox -e py312` | <!-- ✅ / ❌ --> |
+  | Quality | `tox -e ci-quality` | <!-- ✅ / ❌ --> |
+  | Coverage | `tox -e coverage` ≥ 80 % | <!-- ✅ / ❌ --> |
+  | Type checking | `tox -e basedpyright` | <!-- ✅ / ❌ --> |
+  | SemVer | No breaking change in patch/minor | <!-- ✅ / ❌ --> |
+
+  **Full Changelog**: $PREVIOUS_TAG...v$RESOLVED_VERSION
+
+autolabeler:
+  - label: "type: ci"
+    files:
+      - ".github/**"
+      - ".codecov.yml"
+      - "tox.ini"
+      - "pyproject.toml"
+
+  - label: "type: test"
+    files:
+      - "tests/**"
+
+  - label: "type: docs"
+    files:
+      - "*.md"
+      - "docs/**"
+
+  - label: "scope: api"
+    files:
+      - "src/fsm_tools/advanced.py"
+      - "src/fsm_tools/extended.py"
+      - "src/fsm_tools/exception.py"
+      - "src/fsm_tools/constants.py"
+      - "src/fsm_tools/__init__.py"
