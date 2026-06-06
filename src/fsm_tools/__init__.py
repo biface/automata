@@ -20,4 +20,4 @@ from .extended import ExtendedLBA as ExtendedLBA
 from .extended import ExtendedTuringMachine as ExtendedTuringMachine
 
 base_path = Path(os.path.abspath(__file__))
-__version__ = "0.1.0"
+__version__ = "0.1.0rc1"
