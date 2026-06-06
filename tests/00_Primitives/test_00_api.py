@@ -42,9 +42,9 @@ class TestPublicAPIClasses:
 
     def test_version_exported(self, fsm_module):
         """__VERSION__ is present and is a non-empty string."""
-        assert hasattr(fsm_module, "__VERSION__")
-        assert isinstance(fsm_module.__VERSION__, str)
-        assert len(fsm_module.__VERSION__) > 0
+        assert hasattr(fsm_module, "__version__")
+        assert isinstance(fsm_module.__version__, str)
+        assert len(fsm_module.__version__) > 0
 
 
 class TestPublicAPIOrigins:

@@ -1,55 +1,64 @@
 # Configuration file for the Sphinx documentation builder.
-#
-# For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 import os
 import sys
 
-# -- Project information -----------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
+# -- Path setup ---------------------------------------------------------------
 
-project = 'Automata Tools'
-copyright = '2024, biface'
-author = 'biface'
-release = '0.0.1'
-version = release
+sys.path.insert(0, os.path.abspath(os.path.join("..", "..", "src")))
 
-# -- General configuration ---------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
+# -- Project information ------------------------------------------------------
 
-sys.path.append(os.path.abspath('..'))
-sys.path.append(os.path.abspath('../..'))
-sys.path.append(os.path.abspath('../../src'))
+project = "fsm-tools"
+copyright = "2024–2026, biface"
+author = "biface"
+release = "0.1.0"
+version = "0.1.0"
 
-print(sys.path)
+# -- General configuration ----------------------------------------------------
 
 extensions = [
-    'sphinx.ext.duration',
-    'sphinx.ext.napoleon',
-    'sphinx.ext.autodoc',
-    'sphinx.ext.autosummary',
-    'sphinx.ext.todo',
-    'sphinx_rtd_theme',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.graphviz',
+    "sphinx.ext.autodoc",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.todo",
+    "sphinx.ext.viewcode",
+    "sphinx.ext.intersphinx",
 ]
 
-templates_path = ['source/_templates']
-exclude_patterns = []
-autoclass_content = 'both'
+templates_path = ["_templates"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+
+language = "en"
+
+autoclass_content = "both"
+autodoc_member_order = "bysource"
+autodoc_default_options = {
+    "members": True,
+    "undoc-members": False,
+    "private-members": False,
+    "special-members": False,
+    "show-inheritance": True,
+}
 
 todo_include_todos = True
 
-language = 'en'
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+}
 
-# -- Options for HTML output -------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
+mathjax_path = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+mathjax3_config = {"chtml": {"displayAlign": "left", "displayIndent": "2em"}}
 
-html_theme = 'sphinx_rtd_theme'
-html_static_path = ['_static']
-html_logo = '_static/images/logo.svg'
-html_favicon = '_static/images/logo.svg'
+# -- Options for HTML output --------------------------------------------------
 
-mathjax_path = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js'
-mathjax3_config = {'chtml': {'displayAlign': 'left', 'displayIndent': '2em'}}
+html_theme = "furo"
+html_static_path = ["_static"]
+html_logo = "_static/images/logo.svg"
+html_favicon = "_static/images/logo.svg"
+
+html_theme_options = {
+    "sidebar_hide_name": False,
+    "navigation_with_keys": True,
+}
