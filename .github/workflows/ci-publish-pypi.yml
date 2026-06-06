@@ -10,6 +10,8 @@ jobs:
   publish-pypi:
     name: Publish final release to PyPI
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     # Run only if build succeeded and the tag is a final release (no 'rc')
     if: |
       github.event.workflow_run.conclusion == 'success' &&

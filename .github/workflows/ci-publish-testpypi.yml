@@ -10,6 +10,8 @@ jobs:
   publish-testpypi:
     name: Publish release candidate to TestPyPI
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     # Run only if build succeeded and the tag is a release candidate (contains 'rc')
     if: |
       github.event.workflow_run.conclusion == 'success' &&
