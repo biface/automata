@@ -41,7 +41,7 @@ class Grammar:
         automaton (Automaton): The automaton that processes the grammar and validates or generates strings.
     """
 
-    def __init__(self, automaton: Automaton = None): # type: ignore[override]
+    def __init__(self, automaton: Automaton = None):  # type: ignore[override]
         """
         Initializes the Grammar class with the components necessary for language recognition or generation.
 
@@ -52,7 +52,7 @@ class Grammar:
         self.alphabet: set[Any] = set()
         self.states: set[Any] = set()
         self.start: Optional[Any] = None
-        self.ruleslist: list[Any] = []
+        self.rules: list[Any] = []
 
     def get_type(self) -> int:
         """
@@ -1034,7 +1034,7 @@ class PushdownAutomaton(LinearBoundedAutomaton):
     # Register (state) management
     # ------------------------------------------------------------------
 
-    def set_register(self, state: str) -> None: # type: ignore[override]
+    def set_register(self, state: str) -> None:  # type: ignore[override]
         """
         Set the current state of the automaton.
 
@@ -1053,7 +1053,7 @@ class PushdownAutomaton(LinearBoundedAutomaton):
     # Transition management
     # ------------------------------------------------------------------
 
-    def add_transition( # type: ignore[override]
+    def add_transition(  # type: ignore[override]
         self,
         state_from: str,
         input_symbol: Any,
