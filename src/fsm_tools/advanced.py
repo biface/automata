@@ -13,7 +13,7 @@ building more complex compilers or language processors.
 
 from __future__ import annotations
 
-from typing import Any, List
+from typing import Any, List, Optional
 
 from .constants import CHOMSKY_GRAMMARS
 from .exception import (
@@ -22,6 +22,7 @@ from .exception import (
     ReadError,
     RemoveComponentError,
     RemoveError,
+    ValidationError,
 )
 
 
@@ -40,7 +41,7 @@ class Grammar:
         automaton (Automaton): The automaton that processes the grammar and validates or generates strings.
     """
 
-    def __init__(self, automaton: Automaton = None):
+    def __init__(self, automaton: Automaton = None):  # type: ignore[override]
         """
         Initializes the Grammar class with the components necessary for language recognition or generation.
 
@@ -48,10 +49,10 @@ class Grammar:
         :type automaton: Automaton
         """
         self.automaton = automaton
-        self.alphabet = set()
-        self.states = set()
-        self.start = None
-        self.rules = []
+        self.alphabet: set[Any] = set()
+        self.states: set[Any] = set()
+        self.start: Optional[Any] = None
+        self.rules: list[Any] = []
 
     def get_type(self) -> int:
         """
@@ -851,3 +852,382 @@ class LinearBoundedAutomaton(TuringMachine):
             raise Exception(
                 f"No valid transition for state '{self.register}' and symbol '{current_symbol}'."
             )
+
+
+class PushdownAutomaton(LinearBoundedAutomaton):
+    """
+    A Pushdown Automaton (PDA) — Type 2 (Context-Free) in the Chomsky hierarchy.
+
+    A PDA is a finite-state machine augmented with an unbounded stack. Its
+    transition function maps a triple ``(state, input_symbol, stack_top)`` to a
+    pair ``(next_state, stack_ops)`` where ``stack_ops`` is the list of symbols
+    pushed after popping the top of the stack.
+
+    The tape-based memory of ``TuringMachine`` and ``LinearBoundedAutomaton`` is
+    **not** used. The PDA operates exclusively on its stack (``self.stack``) and
+    on the input word (``self.input_word`` / ``self.input_pos``).
+
+    :param name: Name of the automaton.
+    :type name: str
+    :param stack_alphabet: Set of symbols allowed on the stack. The bottom-of-stack
+        marker (``bottom_symbol``) is always included.
+    :type stack_alphabet: set | None
+    :param bottom_symbol: Initial stack symbol (bottom-of-stack marker).
+        Defaults to ``"Z"``.
+    :type bottom_symbol: str
+    :param accept: Accepting state label. Defaults to ``"OK"``.
+    :type accept: str
+    :param reject: Rejecting state label. Defaults to ``"nOK"``.
+    :type reject: str
+
+    Attributes:
+        stack (list): The stack. ``stack[-1]`` is the top.
+        stack_alphabet (set): The set of symbols allowed on the stack.
+        input_word (list): The input word currently loaded.
+        input_pos (int): Current read position in ``input_word``.
+        register (str): Current state.
+        validation (dict): Maps ``"accept"`` and ``"reject"`` to their labels.
+
+    .. note::
+        Epsilon-transitions (``input_symbol=None``) are **not** implemented in
+        v0.1.0. They are reserved for v0.3.0. Attempting to add one raises
+        ``NotImplementedError``.
+    """
+
+    def __init__(
+        self,
+        name: str,
+        stack_alphabet: set = None,
+        bottom_symbol: str = "Z",
+        accept: str = "OK",
+        reject: str = "nOK",
+    ):
+        # Bypass TuringMachine and LinearBoundedAutomaton __init__ entirely.
+        # Call Automaton directly — the tape/head/moves/tape_size machinery
+        # does not apply to this stack-based model.
+        Automaton.__init__(self, name, chomsky="Context-Free")
+
+        self.register: str = ""
+        self.validation: dict = {"accept": accept, "reject": reject}
+        self.add_non_terminals(accept)
+        self.add_non_terminals(reject)
+
+        # Stack alphabet — distinct from the input alphabet.
+        self.stack_alphabet: set = set()
+        self.bottom_symbol: str = bottom_symbol
+        self._add_stack_symbol(bottom_symbol)
+        if stack_alphabet:
+            for sym in stack_alphabet:
+                self._add_stack_symbol(sym)
+
+        # Stack: bottom marker is always present at initialisation.
+        self.stack: list = [bottom_symbol]
+
+        # Input word and read head.
+        self.input_word: list = []
+        self.input_pos: int = 0
+
+    # ------------------------------------------------------------------
+    # Stack alphabet management
+    # ------------------------------------------------------------------
+
+    def _add_stack_symbol(self, symbol: Any) -> None:
+        """
+        Add a symbol to the stack alphabet.
+
+        :param symbol: Symbol to add.
+        :raises AddError: If the symbol is already in the stack alphabet.
+        """
+        if symbol in self.stack_alphabet:
+            raise AddError(self.GRAMMAR, "stack", symbol=symbol)
+        self.stack_alphabet.add(symbol)
+
+    def get_stack_alphabet(self) -> set:
+        """
+        Return the stack alphabet.
+
+        :return: Set of symbols allowed on the stack.
+        :rtype: set
+        :raises ReadError: If the stack alphabet is empty.
+        """
+        if not self.stack_alphabet:
+            raise ReadError(self.GRAMMAR, "alphabet")
+        return self.stack_alphabet
+
+    # ------------------------------------------------------------------
+    # Stack operations
+    # ------------------------------------------------------------------
+
+    def push(self, symbol: Any) -> None:
+        """
+        Push a symbol onto the top of the stack.
+
+        :param symbol: Symbol to push. Must be in the stack alphabet.
+        :type symbol: Any
+        :raises AddError: If the symbol is not in the stack alphabet.
+        """
+        if symbol not in self.stack_alphabet:
+            raise AddError(self.GRAMMAR, "stack", symbol=symbol)
+        self.stack.append(symbol)
+
+    def pop(self) -> Any:
+        """
+        Pop the top symbol off the stack.
+
+        :return: The symbol that was on top.
+        :rtype: Any
+        :raises RemoveComponentError: If the stack is empty.
+        """
+        if not self.stack:
+            raise RemoveComponentError(self.GRAMMAR, "stack")
+        return self.stack.pop()
+
+    def peek(self) -> Any:
+        """
+        Return the top symbol without removing it.
+
+        :return: The symbol currently on top of the stack.
+        :rtype: Any
+        :raises RemoveComponentError: If the stack is empty.
+        """
+        if not self.stack:
+            raise RemoveComponentError(self.GRAMMAR, "stack")
+        return self.stack[-1]
+
+    def reset_stack(self) -> None:
+        """
+        Reset the stack to its initial state (bottom marker only).
+        """
+        self.stack = [self.bottom_symbol]
+
+    # ------------------------------------------------------------------
+    # Input word management
+    # ------------------------------------------------------------------
+
+    def set_input(self, word: List[Any]) -> None:
+        """
+        Load an input word and reset the read head to position 0.
+
+        All symbols in ``word`` must be in the input alphabet
+        (``self.grammar.alphabet``).
+
+        :param word: Sequence of input symbols.
+        :type word: List[Any]
+        :raises ReadError: If any symbol is not in the input alphabet.
+        """
+        terminals = self.get_terminals()
+        for symbol in word:
+            if symbol not in terminals:
+                raise ReadError(self.GRAMMAR, "alphabet", symbol=symbol)
+        self.input_word = list(word)
+        self.input_pos = 0
+
+    def _current_input(self):
+        """
+        Return the current input symbol, or ``None`` if end of input.
+        """
+        if self.input_pos < len(self.input_word):
+            return self.input_word[self.input_pos]
+        return None
+
+    # ------------------------------------------------------------------
+    # Register (state) management
+    # ------------------------------------------------------------------
+
+    def set_register(self, state: str) -> None:  # type: ignore[override]
+        """
+        Set the current state of the automaton.
+
+        If this is the first call, the state also becomes the grammar start symbol.
+
+        :param state: State label.
+        :type state: str
+        """
+        self.register = state
+        if self.grammar.start is None:
+            self.grammar.start = state
+        if state not in self.grammar.states:
+            self.add_non_terminals(state)
+
+    # ------------------------------------------------------------------
+    # Transition management
+    # ------------------------------------------------------------------
+
+    def add_transition(  # type: ignore[override]
+        self,
+        state_from: str,
+        input_symbol: Any,
+        stack_top: Any,
+        state_to: str,
+        stack_ops: List[Any],
+    ) -> None:
+        """
+        Add a transition rule to the PDA.
+
+        A transition is a 5-tuple::
+
+            (state_from, input_symbol, stack_top, state_to, stack_ops)
+
+        - ``state_from``: state before the transition.
+        - ``input_symbol``: input symbol consumed. ``None`` is reserved for
+          epsilon-transitions (v0.3.0) and raises ``NotImplementedError`` here.
+        - ``stack_top``: symbol that must be on top of the stack (will be popped).
+        - ``state_to``: state after the transition.
+        - ``stack_ops``: list of symbols pushed after popping ``stack_top``.
+          ``[]`` = pure pop; ``[X]`` = replace top with X;
+          ``[X, Y]`` = pop then push Y, then X (X ends up on top).
+
+        :param state_from: Source state.
+        :type state_from: str
+        :param input_symbol: Input symbol consumed by this transition.
+        :type input_symbol: Any
+        :param stack_top: Expected top-of-stack symbol (will be popped).
+        :type stack_top: Any
+        :param state_to: Target state.
+        :type state_to: str
+        :param stack_ops: Symbols to push after popping, leftmost ends on top.
+        :type stack_ops: List[Any]
+        :raises NotImplementedError: If ``input_symbol`` is ``None``
+            (epsilon-transitions are reserved for v0.3.0).
+        :raises ReadError: If ``input_symbol`` is not in the input alphabet,
+            or ``stack_top`` / any symbol in ``stack_ops`` is not in the
+            stack alphabet.
+        :raises AddError: If an identical transition already exists.
+        """
+        if input_symbol is None:
+            raise NotImplementedError(
+                "Epsilon-transitions (input_symbol=None) are not implemented "
+                "in v0.1.0. They are planned for v0.3.0."
+            )
+
+        if input_symbol not in self.get_terminals():
+            raise ReadError(self.GRAMMAR, "alphabet", symbol=input_symbol)
+
+        if stack_top not in self.stack_alphabet:
+            raise AddError(self.GRAMMAR, "stack", symbol=stack_top)
+
+        for sym in stack_ops:
+            if sym not in self.stack_alphabet:
+                raise AddError(self.GRAMMAR, "stack", symbol=sym)
+
+        for state in (state_from, state_to):
+            if state not in self.grammar.states:
+                self.add_non_terminals(state)
+
+        rule = (state_from, input_symbol, stack_top, state_to, stack_ops)
+        if rule in self.grammar.rules:
+            raise AddError(self.GRAMMAR, "transitions", transition=str(rule))
+        self.add_rules(rule)
+
+    # ------------------------------------------------------------------
+    # Step execution
+    # ------------------------------------------------------------------
+
+    def step(self) -> None:
+        """
+        Execute one step of the PDA.
+
+        Looks for a matching transition ``(register, current_input, stack_top)``
+        in ``self.grammar.rules``. On match:
+
+        1. Pop the stack top.
+        2. Push ``stack_ops`` in reverse order (so the leftmost symbol in
+           ``stack_ops`` ends up on top).
+        3. Advance the input position by 1.
+        4. Update ``self.register`` to the target state.
+
+        :raises ReadError: If the stack is empty when trying to read the top.
+        :raises Exception: If no matching transition is found.
+        """
+        current_input = self._current_input()
+        current_top = self.peek()
+
+        for rule in self.grammar.rules:
+            state_from, input_symbol, stack_top, state_to, stack_ops = rule
+            if (
+                self.register == state_from
+                and current_input == input_symbol
+                and current_top == stack_top
+            ):
+                self.pop()
+                for sym in reversed(stack_ops):
+                    self.push(sym)
+                self.input_pos += 1
+                self.register = state_to
+                return
+
+        raise Exception(
+            f"No valid transition for state='{self.register}', "
+            f"input='{current_input}', stack_top='{current_top}'."
+        )
+
+    # ------------------------------------------------------------------
+    # Validation
+    # ------------------------------------------------------------------
+
+    def validate(self, word: List[Any]) -> bool:
+        """
+        Determine whether ``word`` is accepted by the PDA.
+
+        Acceptance is by **empty stack**: the word is accepted if, after
+        consuming all input symbols, the stack is empty (the bottom marker
+        has been popped).
+
+        The automaton is reset (stack, register, input) before running.
+
+        :param word: Input word to validate.
+        :type word: List[Any]
+        :raises ValidationError: If the automaton is not configured (no start
+            state, no terminals, no transitions).
+        :raises ValidationError: If any symbol in ``word`` is not in the input alphabet.
+        :return: ``True`` if ``word`` is accepted, ``False`` otherwise.
+        :rtype: bool
+        """
+        if self.grammar.start is None:
+            raise ValidationError(self.GRAMMAR, "validation", reason="no start state defined")
+        if not self.grammar.alphabet:
+            raise ValidationError(self.GRAMMAR, "validation", reason="no input alphabet defined")
+        if not self.grammar.rules:
+            raise ValidationError(self.GRAMMAR, "validation", reason="no transitions defined")
+
+        self.reset_stack()
+        self.set_input(word)
+        self.register = self.grammar.start
+
+        try:
+            while self._current_input() is not None:
+                self.step()
+        except Exception:
+            return False
+
+        # Reject the empty word: no input consumed means no computation ran.
+        if self.input_pos == 0:
+            return False
+
+        # Acceptance by empty stack (functional): the bottom marker is a
+        # convention, not a computation symbol. Epsilon-transitions required
+        # to pop the bottom marker are deferred to v0.3.0.
+        return self.stack == [self.bottom_symbol]
+
+    # ------------------------------------------------------------------
+    # Override tape-based methods to prevent misuse
+    # ------------------------------------------------------------------
+
+    def set_tape(self, *args, **kwargs):  # type: ignore[override]
+        """Not applicable to PDA. Use :meth:`set_input` instead."""
+        raise NotImplementedError("PushdownAutomaton does not use a tape. Use set_input() instead.")
+
+    def read(self):  # type: ignore[override]
+        """Not applicable to PDA. Use :meth:`peek` or :meth:`_current_input` instead."""
+        raise NotImplementedError(
+            "PushdownAutomaton does not have a tape head. "
+            "Use peek() for the stack top or _current_input() for the input."
+        )
+
+    def write(self, symbol):  # type: ignore[override]
+        """Not applicable to PDA. Use :meth:`push` instead."""
+        raise NotImplementedError("PushdownAutomaton does not write to a tape. Use push() instead.")
+
+    def move(self, direction):  # type: ignore[override]
+        """Not applicable to PDA. The input head advances automatically in step()."""
+        raise NotImplementedError("PushdownAutomaton does not have a movable tape head.")

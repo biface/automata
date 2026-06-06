@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "fsm-tools"
-version = "0.0.5"
+version = "0.1.0rc2"
 authors = [
     {name = "biface", email = "fek2qe8i3@mozmail.com"}
 ]
@@ -12,7 +12,7 @@ description = "Formal automata for the Chomsky hierarchy — pure Python."
 readme = "README.md"
 requires-python = ">=3.10"
 classifiers = [
-    "Development Status :: 1 - Planning",
+    "Development Status :: 2 - Pre-Alpha",
     "Intended Audience :: Education",
     "License :: CeCILL-C Free Software License Agreement (CECILL-C)",
     "Topic :: Scientific/Engineering :: Mathematics",
@@ -42,7 +42,15 @@ dev  = [
     "tox",
     "tox-uv",
 ]
-test = ["pytest", "pytest-cov"]
+docs = [
+    "furo",
+    "sphinx",
+    "sphinx-autodoc-typehints",
+]
+test = [
+    "pytest",
+    "pytest-cov",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
