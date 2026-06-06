@@ -1,5 +1,5 @@
 ![Python](https://img.shields.io/badge/Language-Python-green.svg)
-![CI](https://github.com/biface/automata/actions/workflows/test.yml/badge.svg)
+![CI](https://github.com/biface/automata/actions/workflows/ci-tests.yml/badge.svg)
 [![codecov](https://codecov.io/gh/biface/automata/branch/master/graph/badge.svg)](https://codecov.io/gh/biface/automata)
 [![PyPI](https://img.shields.io/pypi/v/fsm-tools.svg)](https://pypi.org/project/fsm-tools/)
 
@@ -16,12 +16,12 @@ Une bibliothèque Python formelle pour la modélisation des automates de la hié
 **fsm-tools** fournit une implémentation rigoureuse des quatre familles d'automates
 définies par la hiérarchie des grammaires et des langages de Chomsky :
 
-| Type | Automate | Famille de langages |
-|------|----------|---------------------|
-| 0 | `TuringMachine` | Récursivement énumérables |
-| 1 | `LinearBoundedAutomaton` | Contextuels |
-| 2 | `PushdownAutomaton` | Hors-contexte |
-| 3 | `FiniteStateAutomaton` | Rationnels |
+| Type  | Automate                 | Famille de langages       | État            |
+|-------|--------------------------|---------------------------|-----------------|
+| 0     | `TuringMachine`          | Récursivement énumérables | ✅ v0.0.4        |
+| 1     | `LinearBoundedAutomaton` | Contextuels               | ✅ v0.0.4        |
+| 2     | `PushdownAutomaton`      | Hors-contexte             | ✅ v0.1.0        |
+| 3     | `FiniteStateAutomaton`   | Rationnels                | 🔄 prévu v0.2.0 |
 
 Chaque classe est une restriction formelle de celle qui la précède — elle hérite de
 sa structure et la contraint davantage. La hiérarchie est implémentée comme une chaîne
@@ -32,7 +32,7 @@ Automaton
 └── TuringMachine               (Type 0)
     └── LinearBoundedAutomaton  (Type 1)
         └── PushdownAutomaton   (Type 2)
-            └── FiniteStateAutomaton  (Type 3)
+            └── FiniteStateAutomaton  (Type 3 — prévu v0.2.0)
 ```
 
 ## Installation
@@ -42,6 +42,8 @@ pip install fsm-tools
 ```
 
 ## Démarrage rapide
+
+### Machine de Turing (Type 0)
 
 ```python
 from fsm_tools import TuringMachine
@@ -58,6 +60,32 @@ tm = TuringMachine(
 )
 ```
 
+### Automate à pile (Type 2)
+
+Reconnaissance du langage hors-contexte L = { aⁿbⁿ | n ≥ 1 } :
+
+```python
+from fsm_tools import PushdownAutomaton
+
+pda = PushdownAutomaton(
+    name="anbn",
+    stack_alphabet={"A"},
+    bottom_symbol="Z",
+)
+pda.add_terminals("a", "b")
+pda.set_register("q0")
+pda.add_non_terminals("q1", "q2")
+
+pda.add_transition("q0", "a", "Z", "q0", ["A", "Z"])
+pda.add_transition("q0", "a", "A", "q0", ["A", "A"])
+pda.add_transition("q0", "b", "A", "q1", [])
+pda.add_transition("q1", "b", "A", "q1", [])
+pda.add_transition("q1", "b", "Z", "q2", [])
+
+pda.validate(["a", "b"])        # True
+pda.validate(["a", "a", "b"])   # False
+```
+
 ## Documentation
 
 La documentation complète est disponible sur
@@ -66,9 +94,8 @@ La documentation complète est disponible sur
 ## Liens
 
 - [PyPI](https://pypi.org/project/fsm-tools/)
-- [GitHub](https://github.com/biface/automata)
-- [Issues](https://github.com/biface/automata/issues)
-- [Contribuer](CONTRIBUTING.fr.md)
+- [GitHub](https://github.com/biface/automata)\n- [Issues](https://github.com/biface/automata/issues)
+- [Contribuer](CONTRIBUTING.md)
 - [Changelog](CHANGELOG.md)
 
 ## Licence
