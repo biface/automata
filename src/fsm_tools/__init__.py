@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 from .advanced import Automaton as Automaton
+from .advanced import FiniteStateAutomaton as FiniteStateAutomaton
 from .advanced import Grammar as Grammar
 from .advanced import LinearBoundedAutomaton as LinearBoundedAutomaton
 from .advanced import PushdownAutomaton as PushdownAutomaton

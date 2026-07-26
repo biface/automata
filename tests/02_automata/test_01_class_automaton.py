@@ -116,7 +116,7 @@ def test_withdraw_non_terminal(automaton_instance):
     automaton_instance.add_non_terminals("S", "A")
     automaton_instance.withdraw_non_terminal()
     assert automaton_instance.grammar.states == set()
-    with pytest.raises(KeyError):
+    with pytest.raises(ReadError):
         automaton_instance.withdraw_non_terminal()  # Already empty
 
 

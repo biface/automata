@@ -1231,3 +1231,266 @@ class PushdownAutomaton(LinearBoundedAutomaton):
     def move(self, direction):  # type: ignore[override]
         """Not applicable to PDA. The input head advances automatically in step()."""
         raise NotImplementedError("PushdownAutomaton does not have a movable tape head.")
+
+
+class FiniteStateAutomaton(PushdownAutomaton):
+    """
+    A Finite-State Automaton (FSA/DFA) — Type 3 (Regular) in the Chomsky hierarchy.
+
+    A DFA is a PDA with no auxiliary memory at all: transitions depend only on
+    the current state and the current input symbol — ``(state, symbol) -> state``.
+    There is no stack and no tape.
+
+    Formal hierarchy membership is preserved (see DD-015): ``FiniteStateAutomaton``
+    subclasses ``PushdownAutomaton``, so ``isinstance(fsa, PushdownAutomaton)`` and
+    ``isinstance(fsa, LinearBoundedAutomaton)`` are both ``True``, matching the
+    Chomsky hierarchy diagram in DD-002. In practice, ``__init__`` bypasses
+    ``PushdownAutomaton.__init__`` and calls ``Automaton.__init__`` directly — the
+    same bypass pattern PDA already uses one level up (DD-013) to avoid dragging
+    in memory machinery that has no formal meaning at this level.
+
+    Rejection model (see DD-015): transitions are checked eagerly. If
+    ``(register, current_input)`` has no matching rule, ``step()`` raises
+    immediately — this is a *partial* transition function, not the classical
+    *total* one with an explicit non-accepting sink state. Both models are
+    equivalent in the languages they recognise; the partial model is simply
+    the one already used by ``PushdownAutomaton.step()`` and reused here for
+    consistency across the hierarchy.
+
+    :param name: Name of the automaton.
+    :type name: str
+    :param accepting_states: Set of accepting state labels. May also be built
+        incrementally via :meth:`add_accepting_state`.
+    :type accepting_states: set | None
+
+    Attributes:
+        register (str): Current state.
+        accepting_states (set): States in which a fully-consumed word is accepted.
+        input_word (list): The input word currently loaded.
+        input_pos (int): Current read position in ``input_word``.
+
+    .. note::
+        Unlike ``PushdownAutomaton.validate()``, the empty word is **not**
+        rejected unconditionally here. PDA rejects the empty word as a
+        workaround: its acceptance test only inspects the stack
+        (``stack == [bottom_symbol]``), which is trivially true before any
+        transition runs — the empty word would otherwise be a systematic
+        false positive, an artefact of the bottom-of-stack marker, not a
+        theoretical position on epsilon. FSA acceptance inspects
+        ``self.register`` directly, so the empty word is decided by the
+        standard rule: accepted iff ``start_state in accepting_states``.
+        No workaround is needed. See DD-015 for the full discussion.
+    """
+
+    def __init__(
+        self,
+        name: str,
+        accepting_states: set = None,
+    ):
+        # Bypass PushdownAutomaton.__init__ entirely (DD-015, mirrors DD-013
+        # one level up): a Type 3 automaton has no stack and no tape, so none
+        # of the memory machinery of PDA/LBA/TM applies here.
+        Automaton.__init__(self, name, chomsky="Regular")
+
+        self.register: str = ""
+        self.accepting_states: set = set()
+        if accepting_states:
+            for state in accepting_states:
+                self.add_accepting_state(state)
+
+        # Input word and read head — reused conceptually from PDA, but FSA
+        # defines its own attributes since PushdownAutomaton.__init__ was
+        # never called.
+        self.input_word: list = []
+        self.input_pos: int = 0
+
+    # ------------------------------------------------------------------
+    # Accepting states management
+    # ------------------------------------------------------------------
+
+    def add_accepting_state(self, state: str) -> None:
+        """
+        Mark a state as accepting.
+
+        The state is added to the automaton's non-terminals if not already
+        present.
+
+        :param state: State label to mark as accepting.
+        :type state: str
+        """
+        if state not in self.grammar.states:
+            self.add_non_terminals(state)
+        self.accepting_states.add(state)
+
+    def remove_accepting_state(self, state: str) -> None:
+        """
+        Unmark a state as accepting.
+
+        The state itself is not removed from the automaton's non-terminals —
+        only its accepting status.
+
+        :param state: State label to unmark.
+        :type state: str
+        :raises RemoveError: If the state is not currently accepting.
+        """
+        if state not in self.accepting_states:
+            raise RemoveError(self.GRAMMAR, "states", symbol=state)
+        self.accepting_states.remove(state)
+
+    def get_accepting_states(self) -> set:
+        """
+        Return the set of accepting states.
+
+        :return: Set of accepting state labels.
+        :rtype: set
+        :raises ReadError: If no accepting state has been defined.
+        """
+        if not self.accepting_states:
+            raise ReadError(self.GRAMMAR, "states")
+        return self.accepting_states
+
+    # ------------------------------------------------------------------
+    # Transition management
+    # ------------------------------------------------------------------
+
+    def add_transition(  # type: ignore[override]
+        self,
+        state_from: str,
+        symbol: Any,
+        state_to: str,
+    ) -> None:
+        """
+        Add a transition rule to the DFA.
+
+        A transition is a 3-tuple ``(state_from, symbol, state_to)``.
+        Determinism is enforced: a second rule for the same
+        ``(state_from, symbol)`` pair is rejected, even if it targets a
+        different state — a DFA transition function is total-or-partial
+        but never one-to-many.
+
+        :param state_from: Source state.
+        :type state_from: str
+        :param symbol: Input symbol consumed by this transition.
+        :type symbol: Any
+        :param state_to: Target state.
+        :type state_to: str
+        :raises ReadError: If ``symbol`` is not in the input alphabet.
+        :raises AddError: If a transition already exists for
+            ``(state_from, symbol)``, regardless of its target state.
+        """
+        if symbol not in self.get_terminals():
+            raise ReadError(self.GRAMMAR, "alphabet", symbol=symbol)
+
+        for existing in self.grammar.rules:
+            if existing[0] == state_from and existing[1] == symbol:
+                raise AddError(
+                    self.GRAMMAR,
+                    "transitions",
+                    transition=str((state_from, symbol, state_to)),
+                )
+
+        for state in (state_from, state_to):
+            if state not in self.grammar.states:
+                self.add_non_terminals(state)
+
+        self.add_rules((state_from, symbol, state_to))
+
+    # ------------------------------------------------------------------
+    # Step execution
+    # ------------------------------------------------------------------
+
+    def step(self) -> None:
+        """
+        Execute one step of the DFA.
+
+        Looks for a matching transition ``(register, current_input)`` in
+        ``self.grammar.rules``. On match, advances the input position by 1
+        and updates ``self.register`` to the target state.
+
+        :raises Exception: If no matching transition is found, or if there
+            is no input symbol left to read.
+        """
+        current_input = self._current_input()
+        if current_input is None:
+            raise Exception(f"No input symbol available to read at state '{self.register}'.")
+
+        for rule in self.grammar.rules:
+            state_from, symbol, state_to = rule
+            if self.register == state_from and current_input == symbol:
+                self.input_pos += 1
+                self.register = state_to
+                return
+
+        raise Exception(
+            f"No valid transition for state='{self.register}', input='{current_input}'."
+        )
+
+    # ------------------------------------------------------------------
+    # Validation
+    # ------------------------------------------------------------------
+
+    def validate(self, word: List[Any]) -> bool:
+        """
+        Determine whether ``word`` is accepted by the DFA.
+
+        Acceptance: after consuming all input symbols (or immediately, for
+        the empty word), ``self.register in self.accepting_states``.
+
+        The automaton is reset (register, input) before running.
+
+        :param word: Input word to validate.
+        :type word: List[Any]
+        :raises ValidationError: If the automaton is not configured (no
+            start state, no terminals, no transitions, no accepting state).
+        :return: ``True`` if ``word`` is accepted, ``False`` otherwise.
+        :rtype: bool
+        """
+        if self.grammar.start is None:
+            raise ValidationError(self.GRAMMAR, "validation", reason="no start state defined")
+        if not self.grammar.alphabet:
+            raise ValidationError(self.GRAMMAR, "validation", reason="no input alphabet defined")
+        if not self.grammar.rules:
+            raise ValidationError(self.GRAMMAR, "validation", reason="no transitions defined")
+        if not self.accepting_states:
+            raise ValidationError(self.GRAMMAR, "validation", reason="no accepting state defined")
+
+        self.set_input(word)
+        self.register = self.grammar.start
+
+        # Empty word: decided directly by the standard rule (see class
+        # docstring for why this diverges from PushdownAutomaton.validate(),
+        # which rejects the empty word unconditionally for an unrelated,
+        # PDA-specific reason).
+        if not word:
+            return self.register in self.accepting_states
+
+        try:
+            while self._current_input() is not None:
+                self.step()
+        except Exception:
+            return False
+
+        return self.register in self.accepting_states
+
+    # ------------------------------------------------------------------
+    # Override stack-based methods inherited from PushdownAutomaton
+    # ------------------------------------------------------------------
+    # Note: set_input() and _current_input() are intentionally *not*
+    # overridden — they manage the input word, not the stack, and FSA needs
+    # them exactly as PDA defines them.
+
+    def push(self, symbol: Any) -> None:  # type: ignore[override]
+        """Not applicable to FSA. A Type 3 automaton has no stack."""
+        raise NotImplementedError("FiniteStateAutomaton has no stack.")
+
+    def pop(self) -> Any:  # type: ignore[override]
+        """Not applicable to FSA. A Type 3 automaton has no stack."""
+        raise NotImplementedError("FiniteStateAutomaton has no stack.")
+
+    def peek(self) -> Any:  # type: ignore[override]
+        """Not applicable to FSA. A Type 3 automaton has no stack."""
+        raise NotImplementedError("FiniteStateAutomaton has no stack.")
+
+    def reset_stack(self) -> None:  # type: ignore[override]
+        """Not applicable to FSA. A Type 3 automaton has no stack."""
+        raise NotImplementedError("FiniteStateAutomaton has no stack.")
