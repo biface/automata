@@ -11,6 +11,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.0] - YYYY-MM-DD
+
+### Added
+
+- `FiniteStateAutomaton` (Type 3 — Regular): a deterministic finite automaton
+  completing the four levels of the Chomsky hierarchy alongside
+  `TuringMachine`, `LinearBoundedAutomaton`, and `PushdownAutomaton`.
+  - Transitions are 3-tuples `(state_from, symbol, state_to)`, added via
+    `add_transition()`. Determinism is enforced: a second transition for the
+    same `(state_from, symbol)` pair is rejected.
+  - Acceptance is defined by a set of `accepting_states`. `validate(word)`
+    consumes the word symbol by symbol and returns whether the automaton
+    ends in an accepting state. The empty word is accepted iff the start
+    state is itself accepting.
+
+### Fixed
+
+- `Automaton.get_states()` — and any method built on the same pattern,
+  including the new `FiniteStateAutomaton.get_accepting_states()` — no
+  longer raises an unhandled `KeyError` when no states have been defined.
+  It now raises the documented `ReadError`, consistently across every
+  automaton type in the hierarchy.
+
+### Notes
+
+- The Chomsky hierarchy is now formally complete:
+  `TuringMachine → LinearBoundedAutomaton → PushdownAutomaton → FiniteStateAutomaton`.
+- The migration from token-based to OIDC Trusted Publishing for PyPI/TestPyPI
+  CI workflows, originally targeted for this release, has been pushed back
+  to `v0.6.0`.
+
+---
+
 ## [0.1.0] — 2026-06-06
 
 First PyPI publication — Pre-Alpha release.
