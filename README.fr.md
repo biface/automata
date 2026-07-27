@@ -16,12 +16,12 @@ Une bibliothèque Python formelle pour la modélisation des automates de la hié
 **fsm-tools** fournit une implémentation rigoureuse des quatre familles d'automates
 définies par la hiérarchie des grammaires et des langages de Chomsky :
 
-| Type  | Automate                 | Famille de langages       | État            |
-|-------|--------------------------|---------------------------|-----------------|
-| 0     | `TuringMachine`          | Récursivement énumérables | ✅ v0.0.4        |
-| 1     | `LinearBoundedAutomaton` | Contextuels               | ✅ v0.0.4        |
-| 2     | `PushdownAutomaton`      | Hors-contexte             | ✅ v0.1.0        |
-| 3     | `FiniteStateAutomaton`   | Rationnels                | 🔄 prévu v0.2.0 |
+| Type  | Automate                 | Famille de langages       | État      |
+|-------|--------------------------|---------------------------|-----------|
+| 0     | `TuringMachine`          | Récursivement énumérables | ✅ v0.0.4 |
+| 1     | `LinearBoundedAutomaton` | Contextuels               | ✅ v0.0.4 |
+| 2     | `PushdownAutomaton`      | Hors-contexte             | ✅ v0.1.0 |
+| 3     | `FiniteStateAutomaton`   | Rationnels                | ✅ v0.2.0 |
 
 Chaque classe est une restriction formelle de celle qui la précède — elle hérite de
 sa structure et la contraint davantage. La hiérarchie est implémentée comme une chaîne
@@ -32,7 +32,7 @@ Automaton
 └── TuringMachine               (Type 0)
     └── LinearBoundedAutomaton  (Type 1)
         └── PushdownAutomaton   (Type 2)
-            └── FiniteStateAutomaton  (Type 3 — prévu v0.2.0)
+            └── FiniteStateAutomaton  (Type 3)
 ```
 
 ## Installation

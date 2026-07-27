@@ -16,12 +16,12 @@ A formal Python library for modelling automata in the Chomsky hierarchy.
 **fsm-tools** provides a rigorous implementation of the four automaton families
 defined by Chomsky's grammar and language hierarchy:
 
-| Type  | Automaton                | Language family        | Status            |
-|-------|--------------------------|------------------------|-------------------|
-| 0     | `TuringMachine`          | Recursively enumerable | ✅ v0.0.4          |
-| 1     | `LinearBoundedAutomaton` | Context-sensitive      | ✅ v0.0.4          |
-| 2     | `PushdownAutomaton`      | Context-free           | ✅ v0.1.0          |
-| 3     | `FiniteStateAutomaton`   | Regular                | 🔄 planned v0.2.0 |
+| Type  | Automaton                | Language family        | Status    |
+|-------|--------------------------|------------------------|-----------|
+| 0     | `TuringMachine`          | Recursively enumerable | ✅ v0.0.4 |
+| 1     | `LinearBoundedAutomaton` | Context-sensitive      | ✅ v0.0.4 |
+| 2     | `PushdownAutomaton`      | Context-free           | ✅ v0.1.0 |
+| 3     | `FiniteStateAutomaton`   | Regular                | ✅ v0.2.0 |
 
 Each class is a formal restriction of the one above it — inheriting its structure
 and constraining it further. The hierarchy is implemented as a strict inheritance
@@ -32,7 +32,7 @@ Automaton
 └── TuringMachine               (Type 0)
     └── LinearBoundedAutomaton  (Type 1)
         └── PushdownAutomaton   (Type 2)
-            └── FiniteStateAutomaton  (Type 3 — planned v0.2.0)
+            └── FiniteStateAutomaton  (Type 3)
 ```
 
 ## Installation
