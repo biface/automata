@@ -34,6 +34,7 @@ media
 develop-eggs/ 
 dist/
 docs/build/
+docs/_build/
 downloads/ 
 eggs/ 
 .eggs/ 
