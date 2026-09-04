@@ -126,9 +126,9 @@ First PyPI publication — Pre-Alpha release.
 ### Changed
 
 - `utils/json.py`: locale dispatch removed, language fixed to `en-US`;
-  `lang: str = None` parameter kept for future `i18n-tools` compatibility (#21)
+  `lang: str = None` parameter kept for future `pyi18t-tools` compatibility (#21)
 - `AutomatonException` docstring updated: `locale` parameter is a no-op
-  until `i18n-tools` is integrated (#21)
+  until `pyi18t-tools` is integrated (#21)
 - `test_00_errors_locales.py` renamed to `test_00_exceptions_messages.py`;
   all locale-switching assertions replaced by en-US assertions (#22)
 

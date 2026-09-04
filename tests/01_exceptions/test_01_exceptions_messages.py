@@ -1,7 +1,7 @@
 """
 Tests for the message system (utils/json.py) and exception hierarchy (exception.py).
 
-Language: en-US (fixed — i18n-tools integration deferred, see DD-006 / issue #8).
+Language: en-US (fixed — pyi18t-tools integration deferred, see DD-006 / issue #8).
 Replaces: test_00_errors_locales.py (locale-dependent tests skipped in v0.0.3).
 Related issues: #22, #8.
 """
