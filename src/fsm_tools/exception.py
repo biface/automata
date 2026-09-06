@@ -5,6 +5,7 @@ This module provides exception classes for Finite State Machines and Automata.
 from typing import List
 
 from .constants import ACTIONS, CHOMSKY_GRAMMARS, COMPONENTS
+from .utils.common import generate_code
 from .utils.json import generate_message
 
 
@@ -65,11 +66,7 @@ class AutomatonException(Exception):
         else:
             self.action = action
 
-        self.value = (
-            1000 * CHOMSKY_GRAMMARS[self.grammar]
-            + 100 * COMPONENTS[self.component]
-            + ACTIONS[self.action]
-        )
+        self.value = int(generate_code(self.grammar, self.component, self.action))
         self.locale = locale
         self.domains = ["automata"]
         self.message = generate_message(
@@ -189,3 +186,21 @@ class RemoveComponentError(AutomatonError):
         if event:
             self.event["cls"] = RuntimeError
         super().__init__(grammar_level, component, "withdraw", locale, **event)
+
+
+class WriteError(AutomatonError):
+    """Error raised for write actions (07, IndexError)."""
+
+    def __init__(self, grammar_level, component, locale=None, **event):
+        if event:
+            self.event["cls"] = IndexError
+        super().__init__(grammar_level, component, "write", locale, **event)
+
+
+class MoveError(AutomatonError):
+    """Error raised for move actions (08, ValueError)."""
+
+    def __init__(self, grammar_level, component, locale=None, **event):
+        if event:
+            self.event["cls"] = ValueError
+        super().__init__(grammar_level, component, "move", locale, **event)
