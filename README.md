@@ -86,6 +86,39 @@ pda.validate(["a", "b"])        # True
 pda.validate(["a", "a", "b"])   # False
 ```
 
+## Extended hierarchy (pedagogical)
+
+`extended.py` provides pedagogical variants that lift specific formal
+restrictions without changing the class of languages recognised — a direct
+illustration of the Church-Turing thesis:
+
+| Class                         | Extends                 | Adds                                    | Since  |
+|-------------------------------|--------------------------|------------------------------------------|--------|
+| `ExtendedTuringMachine`       | `TuringMachine`           | n-dimensional, bidirectional tape         | v0.0.4 |
+| `ExtendedLBA`                 | `LinearBoundedAutomaton`  | n-dimensional bounded tape                | v0.0.4 |
+| `ExtendedPushdownAutomaton`   | `PushdownAutomaton`       | Epsilon-transitions, epsilon-closure `validate()` | v0.3.0 |
+
+```python
+from fsm_tools import ExtendedPushdownAutomaton
+
+# L = { aⁿbⁿ | n ≥ 0 } — the epsilon-transition covers n = 0, which the
+# base PushdownAutomaton rejects unconditionally.
+epda = ExtendedPushdownAutomaton(name="anbn-eps", stack_alphabet={"A"}, bottom_symbol="Z")
+epda.add_terminals("a", "b")
+epda.set_register("q0")
+epda.add_non_terminals("q1", "q2")
+
+epda.add_transition("q0", "a", "Z", "q0", ["A", "Z"])
+epda.add_transition("q0", "a", "A", "q0", ["A", "A"])
+epda.add_transition("q0", "b", "A", "q1", [])
+epda.add_transition("q1", "b", "A", "q1", [])
+epda.add_transition("q1", "b", "Z", "q2", [])
+epda.add_transition("q0", None, "Z", "q2", ["Z"])   # epsilon: accept n = 0
+
+epda.validate([])               # True
+epda.validate(["a", "b"])       # True
+```
+
 ## Documentation
 
 Full documentation is available at
