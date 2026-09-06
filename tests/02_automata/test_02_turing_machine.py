@@ -5,6 +5,8 @@ Uses fixtures from conftest.py (importlib-based).
 
 import pytest
 
+from fsm_tools.exception import MoveError, SearchError
+
 
 class TestInitialization:
 
@@ -74,9 +76,8 @@ class TestExtendTape:
     def test_negative_position_raises_index_error(self, tm_instance):
         tm_instance.add_terminals("a")
         tm_instance.set_tape(["a"])
-        tm_instance.move("B")
-        with pytest.raises(IndexError, match="position 0"):
-            tm_instance.read()
+        with pytest.raises(MoveError, match="unauthorized tape area"):
+            tm_instance.move("B")
 
     def test_tape_length_grows(self, tm_instance):
         tm_instance.add_terminals("a")
@@ -220,7 +221,7 @@ class TestStep:
     def test_step_no_transition_raises(self, tm_instance):
         tm_instance.add_terminals("x")
         tm_instance.set_tape(["x"])
-        with pytest.raises(Exception, match="No valid transition"):
+        with pytest.raises(SearchError, match="No transition matches"):
             tm_instance.step()
 
     def test_full_run_symbol_replacement(self, fsm_module):

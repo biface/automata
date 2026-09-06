@@ -25,6 +25,7 @@ from fsm_tools.exception import (
     AddError,
     ReadError,
     RemoveComponentError,
+    SearchError,
     ValidationError,
 )
 
@@ -124,8 +125,9 @@ class TestStackAlphabet:
         assert "A" in sa
 
     def test_get_stack_alphabet_empty_raises(self):
-        pda = PushdownAutomaton(name="p")
+        pda = PushdownAutomaton.__new__(PushdownAutomaton)
         pda.stack_alphabet = set()
+        pda.GRAMMAR = "Context-Free"
         with pytest.raises(ReadError):
             pda.get_stack_alphabet()
 
@@ -272,9 +274,9 @@ class TestStep:
         assert pda_anbn.input_pos == 1
 
     def test_step_no_valid_transition_raises(self, pda_anbn):
-        """Step with no matching rule raises Exception."""
+        """Step with no matching rule raises SearchError."""
         pda_anbn.set_input(["b"])  # 'b' with Z on top and in state q0 — no rule
-        with pytest.raises(Exception):
+        with pytest.raises(SearchError, match="No rule matches"):
             pda_anbn.step()
 
 

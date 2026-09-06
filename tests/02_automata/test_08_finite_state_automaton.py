@@ -25,7 +25,9 @@ from fsm_tools.exception import (
     AddError,
     ReadError,
     RemoveError,
+    SearchError,
     ValidationError,
+    WriteError,
 )
 
 # ---------------------------------------------------------------------------
@@ -151,14 +153,14 @@ class TestStep:
     def test_step_no_input_raises(self, turnstile_fsa):
         turnstile_fsa.set_input([])
         turnstile_fsa.register = "locked"
-        with pytest.raises(Exception):
+        with pytest.raises(WriteError, match="No input symbol remains"):
             turnstile_fsa.step()
 
     def test_step_no_matching_transition_raises(self, empty_fsa):
         empty_fsa.add_terminals("a")
         empty_fsa.set_input(["a"])
         empty_fsa.register = "q0"
-        with pytest.raises(Exception):
+        with pytest.raises(SearchError, match="No transition matches"):
             empty_fsa.step()
 
 
@@ -226,6 +228,22 @@ class TestValidate:
     def test_validate_resets_state_between_calls(self, turnstile_fsa):
         assert turnstile_fsa.validate(["coin"]) is False
         assert turnstile_fsa.validate([]) is True
+
+    def test_validate_conflicting_transition_raises(self, turnstile_fsa):
+        """Defense in depth: add_transition() already forbids this (DD-015's
+        determinism guarantee), so this only fires if grammar.rules is
+        manipulated directly, bypassing the public API."""
+        turnstile_fsa.grammar.rules.append(("locked", "coin", "locked"))
+        with pytest.raises(ValidationError, match="conflicting transition"):
+            turnstile_fsa.validate(["coin"])
+
+    def test_validate_unreachable_state_raises(self, turnstile_fsa):
+        """Defense in depth: every state normally reaches the graph through
+        add_transition()/add_non_terminals(), so this only fires if
+        grammar.states is manipulated directly."""
+        turnstile_fsa.add_non_terminals("island")
+        with pytest.raises(ValidationError, match="unreachable"):
+            turnstile_fsa.validate(["coin"])
 
 
 # ---------------------------------------------------------------------------

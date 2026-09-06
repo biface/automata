@@ -84,15 +84,19 @@ class TestSeekMessage:
     @pytest.mark.parametrize(
         "msg_id, domain, expected",
         [
-            ("4101", "automata", "Read the symbols of the alphabet of a finite automaton."),
-            ("4605", "automata", "Validate a finite automaton."),
-            ("1101", "automata", "Read the symbols of the alphabet of a Turing machine."),
-            ("1203", "automata", "Remove a transition from a Turing machine."),
-            ("3519", "automata", "Attempted to remove a symbol from an empty stack."),
-            ("2605", "automata", "Validate a context-sensitive automaton."),
-            ("4101", "errors", "Unable to read symbols as the alphabet is empty."),
-            ("3519", "errors", "Error: attempt to pop a symbol from an empty stack."),
-            ("1506", "errors", "An infinite loop was detected during execution."),
+            ("40101", "automata", "Read the symbols of the alphabet of a finite automaton."),
+            ("40605", "automata", "Validate a finite automaton."),
+            ("10101", "automata", "Read the symbols of the alphabet of a Turing machine."),
+            ("10203", "automata", "Remove a transition from a Turing machine."),
+            ("30519", "automata", "Attempted to remove a symbol from an empty stack."),
+            ("20605", "automata", "Validate a context-sensitive automaton."),
+            ("40101", "errors", "Unable to read symbols as the alphabet is empty."),
+            ("30519", "errors", "Error: attempt to pop a symbol from an empty stack."),
+            (
+                "10705",
+                "errors",
+                "An infinite loop was detected during execution — the Turing machine did not halt within {max_steps} steps.",
+            ),
         ],
     )
     def test_seek_known_message(self, msg_id, domain, expected):
@@ -101,8 +105,8 @@ class TestSeekMessage:
 
     def test_lang_parameter_is_ignored(self):
         """lang is a no-op — result must be identical regardless of value."""
-        result_default = seek_message("4101", "automata")
-        result_with_lang = seek_message("4101", "automata", lang="fr-FR")
+        result_default = seek_message("40101", "automata")
+        result_with_lang = seek_message("40101", "automata", lang="fr-FR")
         assert result_default == result_with_lang
 
     def test_unknown_msg_id_raises_key_error(self):
@@ -115,17 +119,17 @@ class TestSeekMessage:
         with pytest.raises(
             FileNotFoundError, match="The JSON file for domain 'nope' was not found."
         ):
-            seek_message("4101", "nope")
+            seek_message("40101", "nope")
 
     def test_lazy_load_on_first_call(self):
         assert "automata" not in localized_messages
-        seek_message("4101", "automata")
+        seek_message("40101", "automata")
         assert "automata" in localized_messages
 
     def test_cached_domain_not_reloaded(self):
-        seek_message("4101", "automata")
+        seek_message("40101", "automata")
         first_id = id(localized_messages["automata"])
-        seek_message("4102", "automata")
+        seek_message("40102", "automata")
         assert id(localized_messages["automata"]) == first_id
 
 
@@ -173,22 +177,22 @@ class TestGetMessage:
     @pytest.mark.parametrize(
         "msg_id, domain, kwargs, expected",
         [
-            ("4101", "automata", {}, "Read the symbols of the alphabet of a finite automaton."),
+            ("40101", "automata", {}, "Read the symbols of the alphabet of a finite automaton."),
             (
-                "4102",
+                "40102",
                 "errors",
                 {"symbol": "X"},
                 "The symbol 'X' cannot be added as it already exists in the alphabet of the finite automaton.",
             ),
             (
-                "1605",
+                "10605",
                 "errors",
                 {"reason": "empty tape"},
                 "The Turing machine is invalid: empty tape.",
             ),
-            ("3519", "errors", {}, "Error: attempt to pop a symbol from an empty stack."),
+            ("30519", "errors", {}, "Error: attempt to pop a symbol from an empty stack."),
             (
-                "4203",
+                "40203",
                 "errors",
                 {"transition": "q0->q1"},
                 "Unable to remove the transition 'q0->q1' as it does not exist in the finite automaton.",
@@ -199,8 +203,8 @@ class TestGetMessage:
         assert get_message(msg_id, domain, **kwargs) == expected
 
     def test_lang_parameter_is_ignored(self):
-        r1 = get_message("4101", "automata")
-        r2 = get_message("4101", "automata", lang="de-DE")
+        r1 = get_message("40101", "automata")
+        r2 = get_message("40101", "automata", lang="de-DE")
         assert r1 == r2
 
     def test_unknown_msg_id_raises_key_error(self):
@@ -211,7 +215,7 @@ class TestGetMessage:
         with pytest.raises(
             ValueError, match="The parameter 'symbol' is missing for formatting the message."
         ):
-            get_message("4102", "errors")  # requires {symbol}
+            get_message("40102", "errors")  # requires {symbol}
 
 
 # ---------------------------------------------------------------------------
@@ -331,7 +335,7 @@ class TestAutomatonException:
     def test_error_code_computation(self):
         exc = AutomatonException("Regular", "alphabet", "read")
         expected = (
-            1000 * CHOMSKY_GRAMMARS["Regular"] + 100 * COMPONENTS["alphabet"] + ACTIONS["read"]
+            10000 * CHOMSKY_GRAMMARS["Regular"] + 100 * COMPONENTS["alphabet"] + ACTIONS["read"]
         )
         assert exc.value == expected
 
