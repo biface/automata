@@ -11,6 +11,110 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.0] — 2026-09-06
+
+### Added
+
+- `ExtendedPushdownAutomaton` in `extended.py`: epsilon-transitions
+  (`input_symbol=None`), reserved since v0.1.0 (DD-013), now fully
+  implemented (#66, #64). `validate()` explores epsilon-closure via a
+  breadth-first search over `(state, input_pos, stack)` configurations
+  instead of `PushdownAutomaton`'s single deterministic path, since an
+  epsilon-transition and a symbol-consuming transition can both be
+  applicable at once. Also resolves DD-015's stack-vacuity artefact for
+  the empty word: accepted only via a configuration actually reached by
+  firing at least one transition, not the untouched start configuration.
+- `WriteError` and `MoveError` in `exception.py` — the two `ACTIONS`
+  entries (`write`, `move`) that had no matching exception class despite
+  each having a real, previously-untyped failure path in `advanced.py`.
+- `RULES_COMPONENT_BY_GRAMMAR` in `constants.py`, formalising DD-009's
+  per-subclass rules-component table as data (#11, #33).
+- `tests/01_exceptions/test_02_common.py` — `generate_code()`'s `KeyError`
+  branches and `id_code()` had zero coverage; both are now tested
+  directly rather than only indirectly through `AutomatonException`.
+- `tests/01_exceptions/test_03_catalog_audit.py` — cartesian-product code
+  uniqueness/alias-resolution check, and an exhaustive parametrized CRUD
+  audit across all 4 Chomsky subclasses (#32, #34, #20).
+- Full 8-language parity (`en-US`, `fr-FR`, `de-DE`, `en-GB`, `es-ES`,
+  `it-IT`, `ga-IE`, `sv-SE`) across `automata.json`/`errors.json`.
+
+### Changed
+
+- Error-code formula widened from `1000×grammar + 100×component + action`
+  to `10000×grammar + 100×component + action` (#79), giving component
+  values headroom beyond a single digit for future non-Chomsky axes
+  without another breaking format change. Every existing catalog code
+  renumbered accordingly, across all 8 languages.
+- `COMPONENTS` re-derived from the actual message catalog content rather
+  than key names: 8 primary axes (`alphabet`, `transitions`,
+  `non_terminals`, `grammar`, `tape`, `stack`, `register`, `validation`),
+  4 pure usage-vocabulary aliases (`states`→`non_terminals`,
+  `blank`→`alphabet`, `head`/`moves`→`tape`) carrying no distinct message
+  content of their own (#79). Previously overflowed into the grammar
+  digit for `register`/`blank` (values 10/11).
+- `Automaton.GRAMMAR`/`TYPE` are now read-only `@property` accessors
+  backed by `self._chomsky`, set once in `__init__` and never reassigned.
+  `change_classification()` removed — never called anywhere, and set
+  `self.GRAMMAR` to an integer instead of the expected string, breaking
+  every subsequent exception raised on the instance.
+- `get_rules()`/`remove_rules()`/`withdraw_rules()` resolve their
+  component via `RULES_COMPONENT_BY_GRAMMAR[self.GRAMMAR]` instead of the
+  undefined `"rules"` key (DD-009) — previously raised an unhandled
+  `ValueError` from inside the exception constructor rather than a typed
+  exception, for every automaton type.
+- `TuringMachine.move()`, `LinearBoundedAutomaton.step()`,
+  `PushdownAutomaton.step()`, `FiniteStateAutomaton.step()`: bare
+  `Exception`/`IndexError`/`ValueError` replaced with `SearchError`,
+  `WriteError`, or `MoveError` as appropriate — giving the `search`
+  action, unreachable anywhere in the codebase until now, its first real
+  use, and wiring `TuringMachine.move()`'s tape-boundary check (previously
+  entirely unchecked; only `read()` caught it, one call later).
+- `FiniteStateAutomaton.validate()` gains two defense-in-depth checks
+  (transition determinism, state reachability from the initial state)
+  guarding against direct manipulation of `grammar.rules`/`grammar.states`
+  — `add_transition()` already prevents both through the public API.
+- `AutomatonException.__init__` now calls `generate_code()` instead of
+  duplicating its formula inline, so the two cannot drift apart again.
+
+### Fixed
+
+- Three real gaps found by the #32 exhaustive audit, left behind by the
+  DD-009 fix above: `TuringMachine.add_non_terminals()`/
+  `remove_non_terminals()` had no catalog entry at any language;
+  `remove_rules()` passed the wrong keyword shape for `TuringMachine`/
+  `LinearBoundedAutomaton`'s `{lhs}`/`{rhs}`-templated messages (only
+  `PushdownAutomaton`/`FiniteStateAutomaton` use a single `{transition}`
+  placeholder); `FiniteStateAutomaton.get_rules()` shared a
+  `{transition}`-templated code with no caller that ever supplied it.
+- `sv-SV` locale key corrected to `sv-SE` — `SV` is the ISO 3166-1 code
+  for El Salvador, not Sweden.
+- `sv-SE` and `ga-IE` catalogs fully retranslated from the reviewed
+  `fr-FR` source: `sv-SE` named the context-sensitive automaton
+  "kontextfria" (context-*free*, the wrong Chomsky level) in several
+  entries; `ga-IE` mixed several different words for the same automaton
+  type within a single entry and used incorrect terminology for
+  state/stack. `ga-IE` is a best-effort translation, not yet reviewed by
+  a native speaker.
+- `generate_code()`'s docstring corrected: raises `KeyError`, not
+  `ValueError`.
+
+### Removed
+
+- `locales/errors-ng.json`, `locales/automata-ng.json` and the abandoned
+  gettext `locales/<lang>/` directory tree (`de-DE/`, `en-GB/`, `en-US/`,
+  `eo/`, `es-ES/`, `fr-FR/`, `ga-IE/`, `it-IT/`, `sv-SE/`) — first step of
+  #20, adapting the message pipeline toward `pyi18t-tools` (DD-017).
+
+### Notes
+
+- DD-009's rules-component mapping, deferred since v0.1.0, is now fully
+  resolved and tested at all 4 grammar levels.
+- The OIDC PyPI/TestPyPI Trusted Publishing migration (#76, DD-014),
+  carried over from v0.2.0, is carried over again — targeted alongside
+  the v0.3.0 publication cycle rather than inside this changeset.
+
+---
+
 ## [0.2.0] - 2026-07-26
 
 ### Added
@@ -126,9 +230,9 @@ First PyPI publication — Pre-Alpha release.
 ### Changed
 
 - `utils/json.py`: locale dispatch removed, language fixed to `en-US`;
-  `lang: str = None` parameter kept for future `i18n-tools` compatibility (#21)
+  `lang: str = None` parameter kept for future `pyi18t-tools` compatibility (#21)
 - `AutomatonException` docstring updated: `locale` parameter is a no-op
-  until `i18n-tools` is integrated (#21)
+  until `pyi18t-tools` is integrated (#21)
 - `test_00_errors_locales.py` renamed to `test_00_exceptions_messages.py`;
   all locale-switching assertions replaced by en-US assertions (#22)
 
@@ -175,7 +279,9 @@ First PyPI publication — Pre-Alpha release.
 
 ---
 
-[Unreleased]: https://github.com/biface/automata/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/biface/automata/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/biface/automata/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/biface/automata/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/biface/automata/compare/v0.0.5...v0.1.0
 [0.0.5]: https://github.com/biface/automata/compare/v0.0.4...v0.0.5
 [0.0.4]: https://github.com/biface/automata/compare/v0.0.3...v0.0.4
