@@ -314,9 +314,15 @@ class Automaton:
         """
         for rule in rules:
             if rule not in self.grammar.rules:
-                raise RemoveError(
-                    self.GRAMMAR, RULES_COMPONENT_BY_GRAMMAR[self.GRAMMAR], transition=str(rule)
-                )
+                component = RULES_COMPONENT_BY_GRAMMAR[self.GRAMMAR]
+                if (
+                    self.GRAMMAR in ("Recursively Enumerable", "Context-Sensitive")
+                    and isinstance(rule, str)
+                    and " -> " in rule
+                ):
+                    lhs, rhs = rule.split(" -> ", 1)
+                    raise RemoveError(self.GRAMMAR, component, lhs=lhs, rhs=rhs)
+                raise RemoveError(self.GRAMMAR, component, transition=str(rule))
             else:
                 self.grammar.rules.remove(rule)
 

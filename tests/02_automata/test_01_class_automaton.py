@@ -122,7 +122,7 @@ def test_withdraw_non_terminal(automaton_instance):
 
 def test_get_rules(automaton_instance):
     """Test retrieving rules."""
-    with pytest.raises(ValueError):
+    with pytest.raises(ReadError):
         automaton_instance.get_rules()
     automaton_instance.add_rules("S -> A", "A -> a")
     assert automaton_instance.get_rules() == ["S -> A", "A -> a"]
