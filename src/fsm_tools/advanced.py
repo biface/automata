@@ -15,14 +15,17 @@ from __future__ import annotations
 
 from typing import Any, List, Optional
 
-from .constants import CHOMSKY_GRAMMARS
+from .constants import CHOMSKY_GRAMMARS, RULES_COMPONENT_BY_GRAMMAR
 from .exception import (
     AddError,
     ModifyError,
+    MoveError,
     ReadError,
     RemoveComponentError,
     RemoveError,
+    SearchError,
     ValidationError,
+    WriteError,
 )
 
 
@@ -108,19 +111,15 @@ class Automaton:
     of a given grammar.
 
     Attributes:
+        GRAMMAR (str): Reference to Chomsky grammar hierarchy (e.g., "Regular", "Context-Free").
+        TYPE (int): Reference to Chomsky grammar hierarchy type, which corresponds to the automaton's type.
         name (str): The name of the automaton. This can be used to identify different types of automata.
         grammar (Grammar): An empty Grammar object initialized as part of the automaton. The grammar can
                            be populated later with terminals, non-terminals, and rules.
-        _chomsky (str): Internal storage for the Chomsky grammar hierarchy classification, set
-                        once at construction time and never reassigned. Exposed publicly, read-only,
-                        through the GRAMMAR property below — not meant to be accessed directly.
-
-    Read-only properties:
-        GRAMMAR (str): Chomsky grammar hierarchy classification (e.g., "Regular", "Context-Free"),
-                       backed by ``_chomsky``.
-        TYPE (int): Numeric Chomsky hierarchy type derived from ``GRAMMAR`` (0 = Recursively
-                    Enumerable ... 3 = Regular). Computed on each access, not stored.
     """
+
+    GRAMMAR: str = ""
+    TYPE: int = 99
 
     def __init__(self, name: str = "", *, chomsky: str):
         """
@@ -134,20 +133,18 @@ class Automaton:
         """
         self.name = name
         if chomsky in CHOMSKY_GRAMMARS.keys():
-            self._chomsky = chomsky
+            self.GRAMMAR = chomsky
+            self.TYPE = CHOMSKY_GRAMMARS[chomsky] - 1
         else:
             raise KeyError(f"Chomsky hierarchy: key '{chomsky}' not recognized.")
         self.grammar = Grammar(self)
 
-    @property
-    def GRAMMAR(self) -> str:
-        """Chomsky grammar hierarchy classification fixed at construction (read-only)."""
-        return self._chomsky
-
-    @property
-    def TYPE(self)-> int:
-        """Numeric Chomsky hierarchy type derived from GRAMMAR (read-only)."""
-        return CHOMSKY_GRAMMARS[self._chomsky] - 1
+    def change_classification(self, classification: str):
+        if classification in CHOMSKY_GRAMMARS.keys():
+            self.GRAMMAR = CHOMSKY_GRAMMARS[classification]
+            self.TYPE = CHOMSKY_GRAMMARS[classification] - 1
+        else:
+            raise KeyError(f"Chomsky hierarchy: key '{classification}' not recognized.")
 
     def get_terminals(
         self,
@@ -294,7 +291,7 @@ class Automaton:
         :raise ReadError: If no rules have been defined in the grammar.
         """
         if len(self.grammar.rules) == 0:
-            raise ReadError(self.GRAMMAR, "rules")
+            raise ReadError(self.GRAMMAR, RULES_COMPONENT_BY_GRAMMAR[self.GRAMMAR])
         else:
             return self.grammar.rules
 
@@ -317,7 +314,9 @@ class Automaton:
         """
         for rule in rules:
             if rule not in self.grammar.rules:
-                raise RemoveError(self.GRAMMAR, "rules", symbol=rule)
+                raise RemoveError(
+                    self.GRAMMAR, RULES_COMPONENT_BY_GRAMMAR[self.GRAMMAR], transition=str(rule)
+                )
             else:
                 self.grammar.rules.remove(rule)
 
@@ -328,7 +327,7 @@ class Automaton:
         :raise RemoveComponentError: If the rules are empty when trying to withdraw rules.
         """
         if len(self.grammar.rules) == 0:
-            raise RemoveComponentError(self.GRAMMAR, "rules")
+            raise RemoveComponentError(self.GRAMMAR, RULES_COMPONENT_BY_GRAMMAR[self.GRAMMAR])
         else:
             self.grammar.reset_rules()
 
@@ -459,6 +458,10 @@ class TuringMachine(Automaton):
         self.axes = axes
         self.tape = []
         self.head = [0] * axes
+        # Fixed-origin tape model (DD-002/DD-007): negative head positions are
+        # out of bounds. ExtendedTuringMachine overrides this to allow a
+        # genuinely bidirectional, dict-based tape (DD-012).
+        self._TAPE_ALLOWS_NEGATIVE_POSITIONS = False
         self.moves = {}
         self.register = register
         self.blank = blank_symbol
@@ -644,6 +647,13 @@ class TuringMachine(Automaton):
         else:
             self.head[axis] = self.head[axis] + self.moves[direction]
 
+        if self._TAPE_ALLOWS_NEGATIVE_POSITIONS is False and any(pos < 0 for pos in self.head):
+            raise MoveError(
+                self.GRAMMAR,
+                "tape",
+                reason=f"head position {self.head} is out of bounds",
+            )
+
     def add_transition(
         self,
         state_from: str,
@@ -719,8 +729,10 @@ class TuringMachine(Automaton):
                     self.add_non_terminals(state_to)  # Add the new state to the set of states
                 break  # Exit after finding and executing a valid rule
         else:
-            raise Exception(
-                f"No valid transition for state '{self.register}' and symbol '{current_symbol}'."
+            raise SearchError(
+                self.GRAMMAR,
+                "tape",
+                reason=f"no transition for state '{self.register}' and symbol '{current_symbol}'",
             )
 
 
@@ -855,8 +867,10 @@ class LinearBoundedAutomaton(TuringMachine):
                     self.add_non_terminals(state_to)
                 break
         else:
-            raise Exception(
-                f"No valid transition for state '{self.register}' and symbol '{current_symbol}'."
+            raise SearchError(
+                self.GRAMMAR,
+                "tape",
+                reason=f"no transition for state '{self.register}' and symbol '{current_symbol}'",
             )
 
 
@@ -1162,9 +1176,13 @@ class PushdownAutomaton(LinearBoundedAutomaton):
                 self.register = state_to
                 return
 
-        raise Exception(
-            f"No valid transition for state='{self.register}', "
-            f"input='{current_input}', stack_top='{current_top}'."
+        raise SearchError(
+            self.GRAMMAR,
+            "grammar",
+            reason=(
+                f"no rule for state='{self.register}', "
+                f"input='{current_input}', stack_top='{current_top}'"
+            ),
         )
 
     # ------------------------------------------------------------------
@@ -1418,7 +1436,11 @@ class FiniteStateAutomaton(PushdownAutomaton):
         """
         current_input = self._current_input()
         if current_input is None:
-            raise Exception(f"No input symbol available to read at state '{self.register}'.")
+            raise WriteError(
+                self.GRAMMAR,
+                "register",
+                reason=f"no input symbol left to determine the next state from '{self.register}'",
+            )
 
         for rule in self.grammar.rules:
             state_from, symbol, state_to = rule
@@ -1427,8 +1449,10 @@ class FiniteStateAutomaton(PushdownAutomaton):
                 self.register = state_to
                 return
 
-        raise Exception(
-            f"No valid transition for state='{self.register}', input='{current_input}'."
+        raise SearchError(
+            self.GRAMMAR,
+            "transitions",
+            reason=f"no transition for state='{self.register}', input='{current_input}'",
         )
 
     # ------------------------------------------------------------------
@@ -1459,6 +1483,34 @@ class FiniteStateAutomaton(PushdownAutomaton):
             raise ValidationError(self.GRAMMAR, "validation", reason="no transitions defined")
         if not self.accepting_states:
             raise ValidationError(self.GRAMMAR, "validation", reason="no accepting state defined")
+
+        # Defense in depth: add_transition() already enforces determinism and
+        # every reachable state is normally added through the public API, so
+        # neither check should ever fire in ordinary use — they only guard
+        # against direct manipulation of self.grammar.rules/self.grammar.states.
+        seen: dict = {}
+        for state_from, symbol, state_to in self.grammar.rules:
+            key = (state_from, symbol)
+            if key in seen and seen[key] != state_to:
+                raise ValidationError(
+                    self.GRAMMAR,
+                    "transitions",
+                    symbol=state_from,
+                    input=symbol,
+                )
+            seen[key] = state_to
+
+        reachable = {self.grammar.start}
+        frontier = [self.grammar.start]
+        while frontier:
+            current = frontier.pop()
+            for state_from, _symbol, state_to in self.grammar.rules:
+                if state_from == current and state_to not in reachable:
+                    reachable.add(state_to)
+                    frontier.append(state_to)
+        for state in self.grammar.states:
+            if state not in reachable:
+                raise ValidationError(self.GRAMMAR, "states", symbol=state)
 
         self.set_input(word)
         self.register = self.grammar.start

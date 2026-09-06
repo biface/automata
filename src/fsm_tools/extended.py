@@ -86,6 +86,7 @@ class ExtendedTuringMachine(TuringMachine):
         # Replace the list-based tape with a dict-based infinite tape.
         # Keys are tuples of head coordinates; values are tape symbols.
         self.tape = {}
+        self._TAPE_ALLOWS_NEGATIVE_POSITIONS = True
 
     def _extend_tape(self, location: list) -> None:
         """
