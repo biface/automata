@@ -86,6 +86,39 @@ pda.validate(["a", "b"])        # True
 pda.validate(["a", "a", "b"])   # False
 ```
 
+## Hiérarchie étendue (pédagogique)
+
+`extended.py` fournit des variantes pédagogiques qui lèvent des restrictions
+formelles précises sans changer la classe des langages reconnus — une
+illustration directe de la thèse de Church-Turing :
+
+| Classe                        | Étend                    | Ajoute                                        | Depuis |
+|-------------------------------|---------------------------|-----------------------------------------------|--------|
+| `ExtendedTuringMachine`       | `TuringMachine`           | Ruban n-dimensionnel, bidirectionnel           | v0.0.4 |
+| `ExtendedLBA`                 | `LinearBoundedAutomaton`  | Ruban borné n-dimensionnel                     | v0.0.4 |
+| `ExtendedPushdownAutomaton`   | `PushdownAutomaton`       | Epsilon-transitions, `validate()` avec fermeture epsilon | v0.3.0 |
+
+```python
+from fsm_tools import ExtendedPushdownAutomaton
+
+# L = { aⁿbⁿ | n ≥ 0 } — l'epsilon-transition couvre n = 0, que l'automate
+# à pile de base rejette inconditionnellement.
+epda = ExtendedPushdownAutomaton(name="anbn-eps", stack_alphabet={"A"}, bottom_symbol="Z")
+epda.add_terminals("a", "b")
+epda.set_register("q0")
+epda.add_non_terminals("q1", "q2")
+
+epda.add_transition("q0", "a", "Z", "q0", ["A", "Z"])
+epda.add_transition("q0", "a", "A", "q0", ["A", "A"])
+epda.add_transition("q0", "b", "A", "q1", [])
+epda.add_transition("q1", "b", "A", "q1", [])
+epda.add_transition("q1", "b", "Z", "q2", [])
+epda.add_transition("q0", None, "Z", "q2", ["Z"])   # epsilon : accepte n = 0
+
+epda.validate([])               # True
+epda.validate(["a", "b"])       # True
+```
+
 ## Documentation
 
 La documentation complète est disponible sur
@@ -94,7 +127,8 @@ La documentation complète est disponible sur
 ## Liens
 
 - [PyPI](https://pypi.org/project/fsm-tools/)
-- [GitHub](https://github.com/biface/automata)\n- [Issues](https://github.com/biface/automata/issues)
+- [GitHub](https://github.com/biface/automata)
+- [Issues](https://github.com/biface/automata/issues)
 - [Contribuer](CONTRIBUTING.md)
 - [Changelog](CHANGELOG.md)
 

@@ -35,14 +35,14 @@ def seek_message(msg_id: str, domain: str, lang: str = None) -> str:
     """
     Look up a message by ID in a given domain.
 
-    The ``lang`` parameter is accepted for future ``i18n-tools`` compatibility
+    The ``lang`` parameter is accepted for future ``pyi18t-tools`` compatibility
     but has no effect in this version — the language is fixed to ``en-US``.
 
     :param msg_id: Message identifier (numeric string matching a key in the JSON file).
     :type msg_id: str
     :param domain: Message domain (``"automata"`` or ``"errors"``).
     :type domain: str
-    :param lang: Reserved for future use. Has no effect until ``i18n-tools`` is integrated.
+    :param lang: Reserved for future use. Has no effect until ``pyi18t-tools`` is integrated.
     :type lang: str
     :return: Raw message template string.
     :rtype: str
@@ -86,14 +86,14 @@ def get_message(msg_id: str, domain: str, lang: str = None, **kwargs) -> str:
     """
     Fetch and format a message by ID.
 
-    The ``lang`` parameter is accepted for future ``i18n-tools`` compatibility
+    The ``lang`` parameter is accepted for future ``pyi18t-tools`` compatibility
     but has no effect in this version — the language is fixed to ``en-US``.
 
     :param msg_id: Message identifier.
     :type msg_id: str
     :param domain: Message domain (``"automata"`` or ``"errors"``).
     :type domain: str
-    :param lang: Reserved for future use. Has no effect until ``i18n-tools`` is integrated.
+    :param lang: Reserved for future use. Has no effect until ``pyi18t-tools`` is integrated.
     :type lang: str
     :param kwargs: Named parameters to inject into the message template.
     :return: Formatted message.
@@ -110,7 +110,7 @@ def generate_message(
     Compute the error code from ``(grammar, component, action)`` and return the
     corresponding formatted message.
 
-    The ``lang`` parameter is accepted for future ``i18n-tools`` compatibility
+    The ``lang`` parameter is accepted for future ``pyi18t-tools`` compatibility
     but has no effect in this version — the language is fixed to ``en-US``.
 
     :param grammar: Chomsky grammar level name (e.g. ``"Regular"``).
@@ -121,7 +121,7 @@ def generate_message(
     :type action: str
     :param domain: Message domain (``"automata"`` or ``"errors"``).
     :type domain: str
-    :param lang: Reserved for future use. Has no effect until ``i18n-tools`` is integrated.
+    :param lang: Reserved for future use. Has no effect until ``pyi18t-tools`` is integrated.
     :type lang: str
     :param kwargs: Named parameters to inject into the message template.
     :return: Formatted message.

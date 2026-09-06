@@ -25,6 +25,7 @@ from fsm_tools.exception import (
     AddError,
     ReadError,
     RemoveComponentError,
+    SearchError,
     ValidationError,
 )
 
@@ -273,9 +274,9 @@ class TestStep:
         assert pda_anbn.input_pos == 1
 
     def test_step_no_valid_transition_raises(self, pda_anbn):
-        """Step with no matching rule raises Exception."""
+        """Step with no matching rule raises SearchError."""
         pda_anbn.set_input(["b"])  # 'b' with Z on top and in state q0 — no rule
-        with pytest.raises(Exception):
+        with pytest.raises(SearchError, match="No rule matches"):
             pda_anbn.step()
 
 

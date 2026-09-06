@@ -1,7 +1,7 @@
 import pytest
 
 from fsm_tools.advanced import Automaton, Grammar
-from fsm_tools.exception import AddError, ModifyError, ReadError, RemoveError
+from fsm_tools.exception import AddError, ModifyError, ReadError, RemoveComponentError, RemoveError
 
 
 @pytest.fixture
@@ -122,7 +122,7 @@ def test_withdraw_non_terminal(automaton_instance):
 
 def test_get_rules(automaton_instance):
     """Test retrieving rules."""
-    with pytest.raises(ValueError):
+    with pytest.raises(ReadError):
         automaton_instance.get_rules()
     automaton_instance.add_rules("S -> A", "A -> a")
     assert automaton_instance.get_rules() == ["S -> A", "A -> a"]
@@ -139,7 +139,7 @@ def test_remove_rules(automaton_instance):
     automaton_instance.add_rules("S -> A", "A -> a")
     automaton_instance.remove_rules("S -> A")
     assert "S -> A" not in automaton_instance.get_rules()
-    with pytest.raises(ValueError):
+    with pytest.raises(RemoveError):
         automaton_instance.remove_rules("S -> A")  # Non-existent rule
 
 
@@ -148,7 +148,7 @@ def test_withdraw_rules(automaton_instance):
     automaton_instance.add_rules("S -> A")
     automaton_instance.withdraw_rules()
     assert automaton_instance.grammar.rules == []
-    with pytest.raises(ValueError):
+    with pytest.raises(RemoveComponentError):
         automaton_instance.withdraw_rules()  # Already empty
 
 
