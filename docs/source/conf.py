@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.abspath(os.path.join("..", "..", "src")))
 project = "fsm-tools"
 copyright = "2024–2026, biface"
 author = "biface"
-release = "0.3.0rc1"
+release = "0.3.0"
 version = "0.1.0"
 
 # -- General configuration ----------------------------------------------------

@@ -24,4 +24,4 @@ from .extended import ExtendedPushdownAutomaton as ExtendedPushdownAutomaton
 from .extended import ExtendedTuringMachine as ExtendedTuringMachine
 
 base_path = Path(os.path.abspath(__file__))
-__version__ = "0.3.0rc1"
+__version__ = "0.3.0"
