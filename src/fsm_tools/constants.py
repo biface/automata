@@ -30,38 +30,61 @@ The mapping is as follows:
 This structure allows the grammar types to be easily referenced and utilized in
 applications where a numeric representation is required.
 """
-# Components within automata
+# Components within automata — 8 primary axes, each needing its own explanatory
+# treatment in the message catalogs, plus aliases that are pure usage-vocabulary
+# translations of a primary axis (same integer, no distinct message content of
+# their own). See DD-004/DD-009 and issue #79 for the full rationale.
 COMPONENTS = {
-    "alphabet": 1,
-    "states": 3,
-    "transitions": 2,
-    "stack": 5,
-    "grammar": 4,
-    "validation": 6,
-    "tape": 7,
-    "head": 8,
-    "moves": 9,
-    "register": 10,
-    "blank": 11,
+    # Primary axes
+    "alphabet": 1,  # Sigma, terminal symbols
+    "transitions": 2,  # delta realised as machine transitions (FSA, TM; also the
+    # raw transition CRUD shared by LBA/PDA alongside "grammar")
+    "non_terminals": 3,  # N, the formal non-terminal set
+    "grammar": 4,  # P realised as production rules (PDA, LBA — distinct
+    # message content from "transitions", e.g. malformed rule)
+    "stack": 5,  # LIFO memory of a pushdown automaton
+    "validation": 6,  # automaton-level and word-level validation outcomes
+    "tape": 7,  # TM/LBA tape mechanics (read/write/move, boundary checks)
+    "register": 8,  # current-state pointer, distinct from non_terminals (the set)
+    # Aliases — pure usage-vocabulary translation of a primary axis above.
+    # No distinct message content: resolve to the same integer as their axis.
+    "states": 3,  # non_terminals, in automata-usage vocabulary
+    "blank": 1,  # alphabet, the distinguished blank terminal
+    "head": 7,  # tape, head-position manifestation
+    "moves": 7,  # tape, movement manifestation
 }
 """
 COMPONENTS is a dictionary that assigns a unique integer value to each key
 representing a fundamental component in computational models and formal grammar processing.
 
-The integer values serve as identifiers, used for ordering, processing, or error handling
-in various operations. The values are assigned in a manner that reflects their relative
-importance or usage frequency in certain contexts.
-
-The mapping is as follows:
-    - "alphabet": Value 1 - Represents the set of terminal symbols in a grammar.
-    - "states": Value 3 - Represents the set of non-terminal symbols or states in an automaton.
-    - "transitions": Value 2 - Represents the rules or transitions that govern state changes.
-    - "stack": Value 5 - Represents the stack used in pushdown automata.
-    - "grammar": Value 4 - Represents the formal grammar associated with the automaton or model.
-    - "validation": Value 6 - Represents the validation component for string recognition or processing.
+There are 8 primary axes (each with its own message content, in both the "automata" and
+"errors" catalogs) and 4 aliases (pure usage-vocabulary translations that resolve to the
+same integer as their primary axis, carrying no distinct message content of their own):
+    - "states" -> "non_terminals" (N is the formal name; every message says "state")
+    - "blank" -> "alphabet" (the blank symbol is a distinguished terminal)
+    - "head" -> "tape", "moves" -> "tape" (both are manifestations of tape mechanics)
 
 These integer values provide a straightforward way to reference or prioritize components
-in computational workflows.
+in computational workflows, and to compute a unique error code (see utils/common.py).
+"""
+
+# Per-subclass resolution of the "rules" concept (DD-009): which primary COMPONENTS
+# axis a subclass's get_rules()/remove_rules()/withdraw_rules() should raise with,
+# keyed by the automaton's own GRAMMAR classification (never a new instance attribute).
+RULES_COMPONENT_BY_GRAMMAR = {
+    "Regular": "transitions",
+    "Recursively Enumerable": "transitions",
+    "Context-Free": "grammar",
+    "Context-Sensitive": "grammar",
+}
+"""
+RULES_COMPONENT_BY_GRAMMAR resolves which COMPONENTS axis to use for the generic
+get_rules()/remove_rules()/withdraw_rules() methods defined once on Automaton, since
+the correct axis depends on the calling instance's Chomsky classification (DD-009):
+FiniteStateAutomaton and TuringMachine expose delta as "transitions"; PushdownAutomaton
+and LinearBoundedAutomaton expose P as "grammar" (context-free/context-sensitive
+production rules). Looked up from self.GRAMMAR at call time — no separate state to keep
+in sync with the class hierarchy.
 """
 
 # Possible actions on components
