@@ -5,6 +5,8 @@ Uses fixtures from conftest.py (importlib-based).
 
 import pytest
 
+from fsm_tools.exception import MoveError, SearchError
+
 
 class TestInitialization:
 
@@ -83,9 +85,8 @@ class TestExtendTape:
             lba.read()
 
     def test_negative_position_raises_index_error(self, lba_with_tape):
-        lba_with_tape.move("B")
-        with pytest.raises(IndexError):
-            lba_with_tape.read()
+        with pytest.raises(MoveError):
+            lba_with_tape.move("B")
 
 
 class TestStep:
@@ -109,7 +110,7 @@ class TestStep:
         )
         lba.add_terminals("a")
         lba.set_tape(["a"])
-        with pytest.raises(Exception, match="No valid transition"):
+        with pytest.raises(SearchError, match="No transition matches"):
             lba.step()
 
     def test_step_at_boundary_raises_index_error(self, fsm_module):

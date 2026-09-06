@@ -122,7 +122,7 @@ def test_error_code_calculation(valid_inputs):
         locale=valid_inputs["locale"],
     )
     expected_code = (
-        1000 * CHOMSKY_GRAMMARS[valid_inputs["grammar"]]
+        10000 * CHOMSKY_GRAMMARS[valid_inputs["grammar"]]
         + 100 * COMPONENTS[valid_inputs["component"]]
         + ACTIONS[valid_inputs["action"]]
     )

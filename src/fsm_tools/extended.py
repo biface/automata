@@ -1,29 +1,36 @@
 """
 Extended automaton hierarchy for pedagogical purposes.
 
-This module provides ``ExtendedTuringMachine`` and ``ExtendedLBA`` — subclasses
-of the formal Chomsky hierarchy that demonstrate how a more expressive computational
-model can be built within the same grammar classification.
+This module provides ``ExtendedTuringMachine``, ``ExtendedLBA`` and
+``ExtendedPushdownAutomaton`` — subclasses of the formal Chomsky hierarchy
+that demonstrate how a more expressive computational model can be built
+within the same grammar classification.
 
 Key principle: a richer tape structure (n-dimensional, bidirectional) does **not**
 change the class of languages recognised. ``ExtendedTuringMachine`` still recognises
 exactly the same Type 0 languages as ``TuringMachine``; ``ExtendedLBA`` still
 recognises exactly the same Type 1 languages as ``LinearBoundedAutomaton``.
-This is a direct illustration of the Church-Turing thesis.
+This is a direct illustration of the Church-Turing thesis. Likewise,
+``ExtendedPushdownAutomaton``'s epsilon-transitions (#66, DD-013) are a
+convenience for writing grammars, not an increase in recognising power —
+every epsilon-PDA has an equivalent epsilon-free PDA.
 
 Hierarchy::
 
     TuringMachine (advanced.py — 1D, formal)
     └── ExtendedTuringMachine   (n-D, dict-based infinite tape)
         └── ExtendedLBA         (n-D, dict-based bounded tape)
+
+    PushdownAutomaton (advanced.py — no epsilon-transitions, formal)
+    └── ExtendedPushdownAutomaton   (epsilon-transitions, epsilon-closure validate())
 """
 
 from __future__ import annotations
 
 from typing import Any, List
 
-from .advanced import TuringMachine
-from .exception import ReadError
+from .advanced import PushdownAutomaton, TuringMachine
+from .exception import AddError, ReadError, SearchError, ValidationError
 
 
 class ExtendedTuringMachine(TuringMachine):
@@ -86,6 +93,7 @@ class ExtendedTuringMachine(TuringMachine):
         # Replace the list-based tape with a dict-based infinite tape.
         # Keys are tuples of head coordinates; values are tape symbols.
         self.tape = {}
+        self._TAPE_ALLOWS_NEGATIVE_POSITIONS = True
 
     def _extend_tape(self, location: list) -> None:
         """
@@ -272,3 +280,167 @@ class ExtendedLBA(ExtendedTuringMachine):
         self.tape = {}
         validate_and_load(content, [])
         self.head = location if location is not None else [0] * self.axes
+
+
+class ExtendedPushdownAutomaton(PushdownAutomaton):
+    """
+    Pedagogical extension of PushdownAutomaton (DD-012 pattern) lifting the
+    v0.1.0 restriction on epsilon-transitions (DD-013, #64). A rule with
+    ``input_symbol=None`` may fire without consuming input.
+
+    Epsilon-transitions make the automaton genuinely non-deterministic: at a
+    given (state, stack top), an epsilon-transition and a symbol-consuming
+    transition can both be applicable at once, and choosing the wrong one
+    first can lead to a dead end even though a valid accepting path exists.
+    ``PushdownAutomaton.step()``/``validate()`` are deterministic, single-path
+    (DD-013) — correct for a PDA with no epsilon-transitions, where at most
+    one rule can ever match a given configuration, but insufficient here.
+
+    ``validate()`` is therefore replaced with a breadth-first search over
+    reachable configurations ``(state, input_pos, stack)`` rather than a
+    linear walk, exploring every applicable transition (epsilon and
+    symbol-consuming) at each configuration instead of committing to the
+    first match. ``step()`` keeps its single-transition, first-match
+    semantics for direct/manual use, extended only to allow epsilon rules
+    to fire without advancing ``input_pos``.
+    """
+
+    def add_transition(
+        self,
+        state_from: Any,
+        input_symbol: Any,
+        stack_top: Any,
+        state_to: Any,
+        stack_ops: List[Any],
+    ) -> None:
+        """
+        Same contract as ``PushdownAutomaton.add_transition``, except that
+        ``input_symbol=None`` (an epsilon-transition) is accepted instead of
+        raising ``NotImplementedError``.
+
+        :raises ReadError: If ``input_symbol`` is not ``None`` and not in the
+            input alphabet, or ``stack_top`` / any symbol in ``stack_ops`` is
+            not in the stack alphabet.
+        :raises AddError: If an identical transition already exists.
+        """
+        if input_symbol is not None and input_symbol not in self.get_terminals():
+            raise ReadError(self.GRAMMAR, "alphabet", symbol=input_symbol)
+
+        if stack_top not in self.stack_alphabet:
+            raise AddError(self.GRAMMAR, "stack", symbol=stack_top)
+
+        for sym in stack_ops:
+            if sym not in self.stack_alphabet:
+                raise AddError(self.GRAMMAR, "stack", symbol=sym)
+
+        for state in (state_from, state_to):
+            if state not in self.grammar.states:
+                self.add_non_terminals(state)
+
+        rule = (state_from, input_symbol, stack_top, state_to, stack_ops)
+        if rule in self.grammar.rules:
+            raise AddError(self.GRAMMAR, "transitions", transition=str(rule))
+        self.add_rules(rule)
+
+    def step(self) -> None:
+        """
+        Apply the first rule matching the current configuration — an
+        epsilon-transition (``input_symbol=None``, stack top only) or a
+        symbol-consuming one — preferring epsilon-transitions first so a
+        direct/manual call always makes progress on the stack when one is
+        available. Epsilon-transitions do not advance ``input_pos``.
+
+        :raises SearchError: If no rule matches the current configuration.
+        """
+        current_input = self._current_input()
+        current_top = self.peek()
+
+        for rule in self.grammar.rules:
+            state_from, input_symbol, stack_top, state_to, stack_ops = rule
+            if self.register == state_from and input_symbol is None and current_top == stack_top:
+                self.pop()
+                for sym in reversed(stack_ops):
+                    self.push(sym)
+                self.register = state_to
+                return
+
+        for rule in self.grammar.rules:
+            state_from, input_symbol, stack_top, state_to, stack_ops = rule
+            if (
+                self.register == state_from
+                and current_input == input_symbol
+                and current_top == stack_top
+            ):
+                self.pop()
+                for sym in reversed(stack_ops):
+                    self.push(sym)
+                self.input_pos += 1
+                self.register = state_to
+                return
+
+        raise SearchError(
+            self.GRAMMAR,
+            "grammar",
+            reason=(
+                f"no rule for state='{self.register}', "
+                f"input='{current_input}', stack_top='{current_top}'"
+            ),
+        )
+
+    def validate(self, word: List[Any]) -> bool:
+        """
+        Accept ``word`` if any epsilon-closure-aware path through the
+        transition relation ends with the whole word consumed and the stack
+        reduced to the bottom marker (empty-stack acceptance, DD-013).
+
+        Explores configurations breadth-first rather than committing to a
+        single path, since an epsilon-transition and a symbol-consuming
+        transition can both be applicable at once. A ``(state, input_pos,
+        stack)`` visited set prevents infinite loops through epsilon cycles.
+
+        :param word: Sequence of input symbols to validate.
+        :type word: List[Any]
+        :return: ``True`` if any explored path accepts, ``False`` otherwise.
+        :rtype: bool
+        :raises ValidationError: If the automaton is not configured to
+            validate at all (no start state, no alphabet, no transitions).
+        """
+        if self.grammar.start is None:
+            raise ValidationError(self.GRAMMAR, "validation", reason="no start state defined")
+        if not self.grammar.alphabet:
+            raise ValidationError(self.GRAMMAR, "validation", reason="no input alphabet defined")
+        if not self.grammar.rules:
+            raise ValidationError(self.GRAMMAR, "validation", reason="no transitions defined")
+
+        start_config = (self.grammar.start, 0, (self.bottom_symbol,))
+        frontier = [start_config]
+        visited = {start_config}
+
+        while frontier:
+            state, pos, stack = frontier.pop()
+            if not stack:
+                continue  # dead end: no top symbol left, no rule can ever match again
+            stack_top = stack[-1]
+
+            for state_from, input_symbol, top, state_to, stack_ops in self.grammar.rules:
+                if state_from != state or top != stack_top:
+                    continue
+
+                if input_symbol is None:
+                    new_pos = pos
+                elif pos < len(word) and word[pos] == input_symbol:
+                    new_pos = pos + 1
+                else:
+                    continue
+
+                new_stack = stack[:-1] + tuple(reversed(stack_ops))
+                new_config = (state_to, new_pos, new_stack)
+
+                if new_pos == len(word) and new_stack == (self.bottom_symbol,):
+                    return True
+
+                if new_config not in visited:
+                    visited.add(new_config)
+                    frontier.append(new_config)
+
+        return False
