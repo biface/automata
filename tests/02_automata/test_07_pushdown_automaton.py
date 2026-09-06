@@ -124,9 +124,8 @@ class TestStackAlphabet:
         assert "A" in sa
 
     def test_get_stack_alphabet_empty_raises(self):
-        pda = PushdownAutomaton.__new__(PushdownAutomaton)
+        pda = PushdownAutomaton(name="p")
         pda.stack_alphabet = set()
-        pda.GRAMMAR = "Context-Free"
         with pytest.raises(ReadError):
             pda.get_stack_alphabet()
 

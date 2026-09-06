@@ -108,15 +108,19 @@ class Automaton:
     of a given grammar.
 
     Attributes:
-        GRAMMAR (str): Reference to Chomsky grammar hierarchy (e.g., "Regular", "Context-Free").
-        TYPE (int): Reference to Chomsky grammar hierarchy type, which corresponds to the automaton's type.
         name (str): The name of the automaton. This can be used to identify different types of automata.
         grammar (Grammar): An empty Grammar object initialized as part of the automaton. The grammar can
                            be populated later with terminals, non-terminals, and rules.
-    """
+        _chomsky (str): Internal storage for the Chomsky grammar hierarchy classification, set
+                        once at construction time and never reassigned. Exposed publicly, read-only,
+                        through the GRAMMAR property below — not meant to be accessed directly.
 
-    GRAMMAR: str = ""
-    TYPE: int = 99
+    Read-only properties:
+        GRAMMAR (str): Chomsky grammar hierarchy classification (e.g., "Regular", "Context-Free"),
+                       backed by ``_chomsky``.
+        TYPE (int): Numeric Chomsky hierarchy type derived from ``GRAMMAR`` (0 = Recursively
+                    Enumerable ... 3 = Regular). Computed on each access, not stored.
+    """
 
     def __init__(self, name: str = "", *, chomsky: str):
         """
@@ -130,18 +134,20 @@ class Automaton:
         """
         self.name = name
         if chomsky in CHOMSKY_GRAMMARS.keys():
-            self.GRAMMAR = chomsky
-            self.TYPE = CHOMSKY_GRAMMARS[chomsky] - 1
+            self._chomsky = chomsky
         else:
             raise KeyError(f"Chomsky hierarchy: key '{chomsky}' not recognized.")
         self.grammar = Grammar(self)
 
-    def change_classification(self, classification: str):
-        if classification in CHOMSKY_GRAMMARS.keys():
-            self.GRAMMAR = CHOMSKY_GRAMMARS[classification]
-            self.TYPE = CHOMSKY_GRAMMARS[classification] - 1
-        else:
-            raise KeyError(f"Chomsky hierarchy: key '{classification}' not recognized.")
+    @property
+    def GRAMMAR(self) -> str:
+        """Chomsky grammar hierarchy classification fixed at construction (read-only)."""
+        return self._chomsky
+
+    @property
+    def TYPE(self)-> int:
+        """Numeric Chomsky hierarchy type derived from GRAMMAR (read-only)."""
+        return CHOMSKY_GRAMMARS[self._chomsky] - 1
 
     def get_terminals(
         self,
